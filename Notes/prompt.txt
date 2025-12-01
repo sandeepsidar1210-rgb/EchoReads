@@ -1,0 +1,33 @@
+1.improve this prompt" create a homepage for "EchoReads" which is a website , it offers users to read different books and novels online , or read an e-book , explore different books and novels of each genre , even contains the link for the same book and their should be an ai feature called " novia" which will help the user suggesting books , answering users queries and even helping user as an audio book . the website should be very highly interactive and colorful and its ui / ux should be very engaging ."
+
+
+2.Create the main marketing homepage for a service called "EchoReads."
+1. Core Requirements & Technology:
+
+Goal: Design a single-page, highly interactive, and visually engaging homepage.
+Aesthetics: The site must be very colorful, modern, and high-contrast, designed with excellent UI/UX. Use a primary color palette of deep blues/purples mixed with vibrant accents (e.g., gold, teal, or neon green) to evoke a sense of knowledge and discovery.
+Responsiveness: Must be fully responsive and look amazing on both desktop and mobile devices.
+2. Content & Section Breakdown:
+Section Title
+Content & Purpose
+Visual Focus
+Header/Hero
+Title: "EchoReads: Your Next Story Awaits." Call-to-Action (CTA): A prominent, contrasting button reading "Start Reading Free" that links to a mock sign-up. Subtext: A brief sentence about reading online, e-books, and exploring novels.
+Bold, full-width background (e.g., a subtle dark parallax image of open books or celestial bodies).
+Feature 1: AI Assistant "Novia"
+Dedicated card/section introducing Novia, the AI. Capabilities: Book suggestions, answering reading queries, and functioning as an audio book narrator.
+Highlight Novia with a unique, contrasting color (e.g., bright teal) and an interactive element, like a small chat bubble icon or an animated microphone/speaker icon.
+Feature 2: Explore Genres
+A dynamically styled grid or carousel showing 6-8 popular genres (e.g., Sci-Fi, Fantasy, Mystery, Romance). Each genre card must have an engaging icon or cover placeholder.
+Clean, structured grid layout with slight hover effects on each genre card to encourage exploration.
+Feature 3: Book Details & Linking
+Explain that users can find the books online, read a free preview, or find an external link to purchase/read the full book.
+Use a clean, informational card format with subtle shadow for depth. Include a placeholder "Read Preview" button and an "External Link" icon.
+3. Interactive & UX Elements (MANDATORY):
+
+Interactive Header: The navigation bar should shrink or subtly change color when the user scrolls down.
+Hover Effects: Implement smooth, eye-catching hover effects (scale, shadow, or color shift) on all buttons, links, and genre cards.
+Animation: Use subtle CSS animations (like fade-in or slide-up) for content sections as the user scrolls to make the page feel more dynamic and engaging.
+Footer: Include mock links for "About Us," "Contact," and "Terms."
+
+

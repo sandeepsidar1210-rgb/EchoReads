@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign In - EchoReads</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>body{background:radial-gradient(at 70% 30%, #171730, #0a0a1a);color:#e2e8f0;font-family:Inter,system-ui,sans-serif}</style>
+</head>
+<body class="min-h-screen grid place-items-center">
+  <div class="w-full max-w-md bg-slate-800/70 rounded-2xl p-8 shadow-xl">
+    <h1 class="text-3xl font-extrabold text-white mb-6 text-center">Sign In</h1>
+    <form id="form" class="space-y-4">
+      <div>
+        <label class="block text-sm text-gray-300 mb-1">Name</label>
+        <input id="name" class="w-full bg-gray-700 rounded px-4 py-2 text-white" placeholder="Your name" />
+      </div>
+      <div>
+        <label class="block text-sm text-gray-300 mb-1">Email (optional)</label>
+        <input id="email" type="email" class="w-full bg-gray-700 rounded px-4 py-2 text-white" placeholder="you@example.com" />
+      </div>
+      <button class="w-full bg-cyan-600 hover:bg-cyan-500 text-white rounded px-4 py-2">Continue</button>
+    </form>
+    <p id="msg" class="text-sm text-center text-gray-400 mt-4"></p>
+  </div>
+  <script>
+    const API='http://localhost:3000/api/auth/signin';
+    const form=document.getElementById('form'); const msg=document.getElementById('msg');
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault(); msg.textContent='Signing in...';
+      const name=document.getElementById('name').value.trim();
+      const email=document.getElementById('email').value.trim();
+      if(!name && !email){ msg.textContent='Enter name or email.'; return; }
+      try{
+        const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email})});
+        const d=await r.json(); if(!d.success) throw new Error(d.message||'Failed');
+        localStorage.setItem('echoreads_user', JSON.stringify(d.data));
+        msg.textContent='Signed in. Redirecting...'; setTimeout(()=>{ window.location.href='index.html'; }, 700);
+      }catch(err){ msg.textContent='Sign in failed. Try again.'; }
+    });
+  </script>
+</body>
+</html>

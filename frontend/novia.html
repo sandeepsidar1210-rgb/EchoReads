@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Novia AI - EchoReads</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body{background:radial-gradient(at 70% 30%, #0a0a1a,#0f172a);color:#e2e8f0;font-family:Inter,system-ui,sans-serif}
+    .glass{background:linear-gradient(180deg,rgba(30,41,59,.6),rgba(15,23,42,.6));backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.08)}
+  </style>
+</head>
+<body class="min-h-screen">
+  <header class="sticky top-0 z-40 bg-gradient-to-r from-cyan-700/20 to-emerald-700/20 border-b border-slate-800/60">
+    <div class="container mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="index.html" class="text-2xl font-bold"><span class="text-amber-400">Echo</span><span class="text-white">Reads</span></a>
+      <nav class="space-x-6 text-gray-300">
+        <a class="hover:text-white" href="browse.html">Browse</a>
+        <a class="hover:text-white" href="genres.html">Genres</a>
+        <a class="text-cyan-400" href="novia.html">Novia</a>
+      </nav>
+    </div>
+  </header>
+  <main class="container mx-auto px-6 py-10">
+    <div class="max-w-4xl mx-auto glass rounded-2xl p-6 shadow-2xl">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-full bg-cyan-500 grid place-items-center">🤖</div>
+        <h1 class="text-3xl font-extrabold">Novia</h1>
+        <span class="ml-auto text-xs text-cyan-300">Online</span>
+      </div>
+      <div class="mb-4 flex flex-wrap gap-2">
+        <button class="px-3 py-1 rounded-full bg-cyan-700/40 hover:bg-cyan-600/50" data-prompt="recommend fantasy">Recommend Fantasy</button>
+        <button class="px-3 py-1 rounded-full bg-cyan-700/40 hover:bg-cyan-600/50" data-prompt="recommend mystery">Recommend Mystery</button>
+        <button class="px-3 py-1 rounded-full bg-cyan-700/40 hover:bg-cyan-600/50" data-prompt="recommend science fiction">Recommend Sci‑Fi</button>
+        <button class="px-3 py-1 rounded-full bg-cyan-700/40 hover:bg-cyan-600/50" data-prompt="suggest a popular book">Popular Books</button>
+      </div>
+      <div id="messages" class="h-96 overflow-y-auto space-y-3 p-2 bg-slate-900/30 rounded-xl"></div>
+      <div id="typing" class="hidden text-sm text-gray-400 mt-2">Novia is typing…</div>
+      <div class="mt-4 flex gap-2">
+        <input id="input" class="flex-1 bg-gray-800 rounded px-4 py-3 text-white outline-none focus:ring-2 focus:ring-cyan-600" placeholder="Ask for recommendations or book info" />
+        <button id="send" class="px-5 py-3 bg-cyan-600 text-white rounded hover:bg-cyan-500">Send</button>
+      </div>
+    </div>
+  </main>
+  <script>
+    const API = 'http://localhost:3000/api/novia/chat';
+    const messages = document.getElementById('messages');
+    const input = document.getElementById('input');
+    const sendBtn = document.getElementById('send');
+    const typing = document.getElementById('typing');
+    function bubble(text,isUser=false){
+      const row=document.createElement('div'); row.className=`flex ${isUser?'justify-end':'justify-start'}`;
+      const b=document.createElement('div'); b.className=`${isUser?'bg-cyan-600 text-white':'bg-gray-800 text-gray-100'} rounded-2xl px-4 py-2 max-w-[75%] shadow`; b.textContent=text;
+      row.appendChild(b); messages.appendChild(row); messages.scrollTop=messages.scrollHeight;
+    }
+    async function send(msg){
+      const text = (msg??input.value).trim(); if(!text) return; input.value=''; bubble(text,true); typing.classList.remove('hidden');
+      try{ const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text})}); const data=await res.json(); typing.classList.add('hidden'); bubble(data.response||'No response.'); }
+      catch{ typing.classList.add('hidden'); bubble('Error contacting Novia.'); }
+    }
+    sendBtn.onclick=()=>send(); input.addEventListener('keypress',e=>{ if(e.key==='Enter') send(); });
+    document.querySelectorAll('[data-prompt]').forEach(btn=>btn.onclick=()=>send(btn.dataset.prompt));
+    bubble("Hi! I'm Novia. Ask me for suggestions like 'recommend sci-fi'.");
+  </script>
+</body>
+</html>

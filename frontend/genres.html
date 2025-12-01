@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Genres - EchoReads</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>body{background:radial-gradient(at 70% 30%, #171730, #0a0a1a);color:#e2e8f0;font-family:Inter,system-ui,sans-serif}</style>
+</head>
+<body class="min-h-screen">
+  <header class="border-b border-slate-800/80 bg-slate-900/40 sticky top-0 z-40">
+    <div class="container mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="index.html" class="text-2xl font-bold text-amber-400">Echo<span class="text-white">Reads</span></a>
+      <nav class="space-x-6 text-gray-300">
+        <a class="hover:text-white" href="browse.html">Browse</a>
+        <a class="text-indigo-400" href="genres.html">Genres</a>
+        <a class="hover:text-white" href="novia.html">Novia</a>
+      </nav>
+    </div>
+  </header>
+  <main class="container mx-auto px-6 py-10">
+    <h1 class="text-4xl font-extrabold text-white mb-6">Explore Genres</h1>
+    <div id="genre-list" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+  </main>
+  <script>
+    const API='http://localhost:3000/api/genres';
+    const FALLBACK=['Fantasy','Science Fiction','Mystery','Romance','Thriller','Horror','Biography','History','Self-Help','Non-Fiction'];
+    async function load(){
+      let genres = [];
+      try { const res=await fetch(API); const data=await res.json(); if (data.success) genres = data.data; } catch {}
+      if (!Array.isArray(genres) || !genres.length) genres = FALLBACK;
+      const list=document.getElementById('genre-list');
+      list.innerHTML=(genres).map(g=>`
+        <a href="browse.html?genre=${encodeURIComponent(g)}" class="p-6 rounded-xl bg-slate-800/70 hover:bg-slate-700/80 transition block text-center">
+          <div class="text-xl font-semibold text-white">${g}</div>
+          <div class="text-sm text-gray-400 mt-1">Browse ${g}</div>
+        </a>
+      `).join('');
+    }
+    load();
+  </script>
+</body>
+</html>

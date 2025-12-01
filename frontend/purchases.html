@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Purchases - EchoReads</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>body{background:radial-gradient(at 70% 30%, #171730, #0a0a1a);color:#e2e8f0;font-family:Inter,system-ui,sans-serif}</style>
+</head>
+<body class="min-h-screen">
+  <header class="border-b border-slate-800/80 bg-slate-900/40 sticky top-0 z-40">
+    <div class="container mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="index.html" class="text-2xl font-bold text-amber-400">Echo<span class="text-white">Reads</span></a>
+      <nav class="space-x-4 text-gray-300 flex items-center">
+        <a class="hover:text-white" href="browse.html">Browse</a>
+        <a class="hover:text-white" href="genres.html">Genres</a>
+        <a class="hover:text-white" href="novia.html">Novia</a>
+        <a class="text-amber-400" href="purchases.html">My Purchases</a>
+        <button id="signout" class="ml-4 px-3 py-1 rounded-full border border-rose-500 text-rose-300 hover:bg-rose-600/20">Sign Out</button>
+      </nav>
+    </div>
+  </header>
+  <main class="container mx-auto px-6 py-10">
+    <h1 class="text-4xl font-extrabold text-white mb-6">My Purchases</h1>
+    <div class="max-w-3xl">
+      <div class="flex gap-2 mb-6">
+        <input id="q" class="flex-1 bg-gray-700 rounded px-4 py-2 text-white" placeholder="Search purchases (title/genre)" />
+        <button id="go" class="px-4 py-2 bg-teal-600 text-white rounded hover:bg-teal-500">Search</button>
+      </div>
+    </div>
+    <div id="list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    <div id="empty" class="hidden text-gray-400">No purchases yet.</div>
+  </main>
+  <script>
+    const API='http://localhost:3000/api/purchases/mine';
+    function getUser(){ try { return JSON.parse(localStorage.getItem('echoreads_user')||'null'); } catch { return null; } }
+    function guard(){ const u=getUser(); if(!u){ window.location.href='signin.html'; return null; } return u; }
+    function card(p){ const b=p.book||{}; return `
+      <div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg">
+        ${b.imageUrl ? `<img src="${b.imageUrl}" alt="${b.title||'Book cover'}" class="w-full h-40 object-cover" />` : ''}
+        <div class="p-4">
+          <h3 class="text-lg font-semibold text-white">${b.title||'Unknown Title'}</h3>
+          <p class="text-gray-400">${b.genre||''}</p>
+          <div class="mt-3 flex items-center justify-between">
+            <span class="text-amber-400 font-bold">$${(p.price||0).toFixed(2)}</span>
+            <span class="text-xs text-gray-500">${new Date(p.createdAt).toLocaleDateString()}</span>
+          </div>
+        </div>
+      </div>`; }
+    let ALL=[];
+    async function load(){
+      const u=guard(); if(!u) return;
+      const r=await fetch(API,{headers:{'x-user-id':u.userId}}); const d=await r.json();
+      ALL=(d.data||[]);
+      render(ALL);
+    }
+    function render(items){
+      const el=document.getElementById('list');
+      el.innerHTML=items.map(card).join('');
+      document.getElementById('empty').classList.toggle('hidden', !!items.length);
+    }
+    function search(){
+      const q=document.getElementById('q').value.toLowerCase();
+      render(ALL.filter(p=> ((p.book?.title||'') + (p.book?.genre||'')).toLowerCase().includes(q)));
+    }
+    document.getElementById('go').onclick=search;
+    document.getElementById('q').addEventListener('keypress',e=>{ if(e.key==='Enter') search(); });
+    document.getElementById('signout').onclick=()=>{ localStorage.removeItem('echoreads_user'); window.location.href='index.html'; };
+    load();
+  </script>
+</body>
+</html>

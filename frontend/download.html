@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Download E-Books - EchoReads</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>body{background:radial-gradient(at 70% 30%, #171730, #0a0a1a);color:#e2e8f0;font-family:Inter,system-ui,sans-serif}</style>
+</head>
+<body class="min-h-screen">
+  <header class="border-b border-slate-800/80 bg-slate-900/40 sticky top-0 z-40">
+    <div class="container mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="index.html" class="text-2xl font-bold text-amber-400">Echo<span class="text-white">Reads</span></a>
+      <nav class="space-x-6 text-gray-300">
+        <a class="hover:text-white" href="browse.html">Browse</a>
+        <a class="hover:text-white" href="genres.html">Genres</a>
+        <a class="hover:text-white" href="novia.html">Novia</a>
+      </nav>
+    </div>
+  </header>
+  <main class="container mx-auto px-6 py-10">
+    <div class="flex items-center justify-between gap-3 mb-6">
+      <div class="flex gap-2">
+        <input id="q" class="w-72 bg-gray-700 rounded px-4 py-2 text-white" placeholder="Search e-books" />
+        <button id="go" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-500">Search</button>
+      </div>
+      <div class="flex items-center gap-3">
+        <label class="text-gray-300">Genre</label>
+        <select id="genre" class="bg-gray-800 border border-gray-700 rounded px-3 py-2 text-gray-200"></select>
+        <label class="text-gray-300">Sort</label>
+        <select id="sort" class="bg-gray-800 border border-gray-700 rounded px-3 py-2 text-gray-200">
+          <option value="latest">Latest</option>
+          <option value="popular">Most Popular</option>
+          <option value="rated">Highly Rated</option>
+        </select>
+      </div>
+    </div>
+    <div id="grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+  </main>
+  <script>
+    const API='http://localhost:3000/api'; let ALL=[];
+    function card(b){ const disabled = !b.pdfUrl; return `<div class=\"bg-gray-800 rounded-lg overflow-hidden shadow-lg\"><img src=\"${b.imageUrl}\" class=\"w-full h-48 object-cover\"/><div class=\"p-4\"><h3 class=\"text-lg font-semibold text-white\">${b.title}</h3><p class=\"text-gray-400\">${b.author}</p><div class=\"mt-3 flex gap-2\"><a class=\"px-3 py-2 rounded bg-indigo-600 hover:bg-indigo-500 text-white ${disabled?'opacity-50 pointer-events-none':''}\" href=\"${disabled?'#':b.pdfUrl}\" target=\"_blank\">Open PDF</a><a class=\"px-3 py-2 rounded bg-gray-700 hover:bg-gray-600 text-white\" href=\"preview.html\">Read Online</a></div></div></div>`}
+    function render(items){ document.getElementById('grid').innerHTML = items.map(card).join(''); }
+    async function load(){ const sort=document.getElementById('sort').value||'latest'; const genre=document.getElementById('genre').value||null; const url = genre? `${API}?genre=${encodeURIComponent(genre)}&sort=${encodeURIComponent(sort)}`: `${API}?sort=${encodeURIComponent(sort)}`; const r=await fetch(url); const d=await r.json(); ALL=d.data||[]; render(ALL); }
+    function search(){ const q=document.getElementById('q').value.toLowerCase(); render(ALL.filter(b=> (b.title+b.author+b.genre).toLowerCase().includes(q))); }
+    async function loadGenres(){ const r=await fetch(API+'/genres'); const d=await r.json(); const sel=document.getElementById('genre'); sel.innerHTML='<option value="">All</option>'+(d.data||[]).map(x=>`<option>${x}</option>`).join(''); sel.onchange=()=>load(); }
+    document.getElementById('go').onclick=search; document.getElementById('q').addEventListener('keypress',e=>{ if(e.key==='Enter') search(); }); document.getElementById('sort').addEventListener('change',()=>load());
+    (async ()=>{ await loadGenres(); await load(); })();
+  </script>
+</body>
+</html>

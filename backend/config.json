@@ -1,0 +1,14 @@
+{
+    "development": {
+        "port": 3000,
+        "database": {
+            "url": "mongodb://localhost:27017/echoreads"
+        }
+    },
+    "production": {
+        "port": 8080,
+        "database": {
+            "url": "YOUR_PRODUCTION_DB_URL"
+        }
+    }
+}
