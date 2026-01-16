@@ -14,7 +14,9 @@
       <nav class="space-x-6 text-gray-300">
         <a class="hover:text-white" href="browse.html">Browse</a>
         <a class="hover:text-white" href="genres.html">Genres</a>
+        <a class="hover:text-white" href="cart.html">Cart</a>
         <a class="hover:text-white" href="novia.html">Novia</a>
+        <button id="signout-btn" class="hidden px-4 py-2 rounded border border-red-500 text-red-400 hover:bg-red-600 hover:text-white transition">Sign Out</button>
       </nav>
     </div>
   </header>
@@ -57,6 +59,21 @@
     async function loadGenres(){ const r=await fetch(API+'/genres'); const d=await r.json(); const sel=document.getElementById('genre'); sel.innerHTML='<option value="">All</option>'+(d.data||[]).map(x=>`<option>${x}</option>`).join(''); sel.onchange=()=>load(); }
     document.getElementById('go').onclick=search; document.getElementById('q').addEventListener('keypress',e=>{ if(e.key==='Enter') search(); }); document.getElementById('sort').addEventListener('change',()=>load());
     (async ()=>{ await loadGenres(); await load(); })();
+
+    // Show sign out if signed in
+    try {
+        const u = JSON.parse(localStorage.getItem('echoreads_user') || 'null');
+        const signout = document.getElementById('signout-btn');
+        if (u && signout) {
+            signout.classList.remove('hidden');
+        }
+    } catch {}
+
+    // Sign out functionality
+    document.getElementById('signout-btn').addEventListener('click', function() {
+        localStorage.removeItem('echoreads_user');
+        location.reload();
+    });
   </script>
 </body>
 </html>

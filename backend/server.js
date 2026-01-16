@@ -18,10 +18,10 @@ mongoose.connect('mongodb://127.0.0.1:27017/echoreads')
 
 app.use(cors());
 app.use(express.json());
+app.use('/api/purchases', require('./routes/purchases'));
 app.use('/api', require('./routes/books'));
 app.use('/api/novia', require('./routes/novia'));
 app.use('/api/auth', require('./routes/auth'));
-app.use('/api/purchases', require('./routes/purchases'));
 app.use('/api/cart', require('./routes/cart'));
 
 // Serve frontend statically
@@ -33,7 +33,7 @@ app.get('/health', (req, res) => {
 });
 
 // Fallback: serve index.html for root and known pages
-app.get(['/', '/index.html', '/browse.html', '/signin.html', '/preview.html', '/download.html', '/external.html', '/genres.html', '/novia.html'], (req, res) => {
+app.get(['/', '/index.html', '/browse.html', '/signin.html', '/preview.html', '/download.html', '/external.html', '/genres.html', '/novia.html', '/admin.html', '/cart.html'], (req, res) => {
     res.sendFile(path.join(frontendDir, req.path === '/' ? 'index.html' : req.path.replace(/^\//, '')));
 });
 

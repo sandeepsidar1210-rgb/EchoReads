@@ -78,8 +78,10 @@
                 <a href="novia.html" class="hover:text-accent-teal transition duration-200">Novia AI</a>
                 <a href="genres.html" class="hover:text-accent-teal transition duration-200">Genres</a>
                 <a href="features.html" class="hover:text-accent-teal transition duration-200">Features</a>
+                <a href="cart.html" class="hover:text-accent-teal transition duration-200">Cart</a>
                 <a href="signin.html" id="signin-link" class="ml-4 px-4 py-2 rounded-full border border-accent-teal text-accent-teal hover:bg-accent-teal hover:text-white transition">Sign In</a>
                 <span id="user-pill" class="hidden ml-3 px-3 py-1 rounded-full bg-gray-700 text-white text-sm"></span>
+                <button id="signout-btn" class="hidden ml-3 px-4 py-2 rounded-full border border-red-500 text-red-400 hover:bg-red-600 hover:text-white transition">Sign Out</button>
             </div>
             <a href="menu.html" class="md:hidden text-gray-300 hover:text-accent-teal">
                 <!-- Mock Menu Icon -->
@@ -306,11 +308,19 @@
                 const u = JSON.parse(localStorage.getItem('echoreads_user') || 'null');
                 const pill = document.getElementById('user-pill');
                 const sign = document.getElementById('signin-link');
-                if (u && u.name && pill && sign) {
+                const signout = document.getElementById('signout-btn');
+                if (u && u.name && pill && sign && signout) {
                     pill.textContent = `Signed in as ${u.name}`; pill.classList.remove('hidden');
                     sign.classList.add('hidden');
+                    signout.classList.remove('hidden');
                 }
             } catch {}
+
+            // Sign out functionality
+            document.getElementById('signout-btn').addEventListener('click', function() {
+                localStorage.removeItem('echoreads_user');
+                location.reload();
+            });
         });
     </script>
 </body>
