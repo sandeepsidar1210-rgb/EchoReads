@@ -1,5 +1,40 @@
 .env
-# Miscellaneous
+# === SECURITY & SECRETS ===
+# This is the most important part to protect your MongoDB and API keys
+.env
+.env.shared
+.env.test
+*.env
+auth_key.json
+db.sqlite3
+db.sqlite3-journal
+
+# === PYTHON & DJANGO ===
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv/
+bin/
+lib/
+develop-eggs/
+dist/
+eggs/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+/media/
+/static/
+
+# === MISCELLANEOUS (Your original list) ===
 *.class
 *.log
 *.pyc
@@ -13,19 +48,14 @@
 .swiftpm/
 migrate_working_dir/
 
-
-# IntelliJ related
+# === IDE RELATED ===
 *.iml
 *.ipr
 *.iws
 .idea/
+.vscode/
 
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
-
-# Flutter/Dart/Pub related
+# === FLUTTER / DART ===
 **/doc/api/
 **/ios/Flutter/.last_build_id
 .dart_tool/
@@ -35,13 +65,11 @@ migrate_working_dir/
 /build/
 /coverage/
 
-# Symbolication related
+# === SYMBOLICATION & OBFUSCATION ===
 app.*.symbols
-
-# Obfuscation related
 app.*.map.json
 
-# Android Studio will place build artifacts here
+# === ANDROID STUDIO ARTIFACTS ===
 /android/app/debug
 /android/app/profile
 /android/app/release
