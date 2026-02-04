@@ -1,5 +1,3 @@
-require("dotenv").config();
-
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
@@ -7,14 +5,16 @@ const path = require('path');
 
 const app = express();
 const port = process.env.PORT || 3000;
-console.log("Mongo:", process.env.MONGO_URI);
+require('dotenv').config();
 
-mongoose.connect(process.env.MONGO_URI)
+
+mongoose.connect(process.env.DATABASE_URL)
   .then(() => console.log("MongoDB connected"))
   .catch(err => {
     console.error(err);
     process.exit(1);
   });
+
 
 
 app.use(cors());
@@ -41,8 +41,4 @@ app.get(['/', '/index.html', '/browse.html', '/signin.html', '/preview.html', '/
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({ success: false, message: 'Something went wrong!' });
-});
-
-app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
 });

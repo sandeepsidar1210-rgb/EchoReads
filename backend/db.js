@@ -9,9 +9,10 @@ async function connectDB() {
   try {
     mongoose.set('strictQuery', true);
 
-    await mongoose.connect(process.env.MONGO_URI, {
-      serverSelectionTimeoutMS: 5000,
-    });
+  await mongoose.connect(process.env.MONGO_URI, {
+  serverSelectionTimeoutMS: 5000,
+  family: 4, // 👈 ADD THIS
+});
 
     isConnected = true;
     console.log('Connected to MongoDB');
