@@ -36,3 +36,4 @@ Thumbs.db
 
 # Optional: MongoDB data (if using local DB)
 data/
+password.txt
