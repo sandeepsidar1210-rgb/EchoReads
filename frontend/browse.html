@@ -97,8 +97,8 @@ const API_BASE_URL = 'http://localhost:3000/api';
             try {
                 const sort = (document.getElementById('sort-select')?.value || 'latest');
                 const url = genre 
-                    ? `${API_BASE_URL}?genre=${encodeURIComponent(genre)}&sort=${encodeURIComponent(sort)}`
-                    : `${API_BASE_URL}?sort=${encodeURIComponent(sort)}`;
+                    ? `${API_BASE_URL}/books?genre=${encodeURIComponent(genre)}&sort=${encodeURIComponent(sort)}`
+                    : `${API_BASE_URL}/books?sort=${encodeURIComponent(sort)}`;
                 const response = await fetch(url);
                 const data = await response.json();
                 
@@ -148,7 +148,7 @@ const API_BASE_URL = 'http://localhost:3000/api';
         // Show book details modal
         async function showBookDetails(bookId) {
             try {
-const response = await fetch(`${API_BASE_URL}/${bookId}`);
+const response = await fetch(`${API_BASE_URL}/books/${bookId}`);
                 const data = await response.json();
                 
                 if (data.success) {
@@ -234,7 +234,7 @@ const response = await fetch(`${API_BASE_URL}/${bookId}`);
         // Initialize genre filters
         async function initializeGenreFilters() {
             try {
-                const response = await fetch(`${API_BASE_URL}/genres`);
+                const response = await fetch(`${API_BASE_URL}/books/genres`);
                 const data = await response.json();
                 
                 if (data.success) {

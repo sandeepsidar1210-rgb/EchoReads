@@ -24,12 +24,12 @@ async function fetchAPI(endpoint, options = {}) {
 
 // Book related functions
 async function getAllBooks(genre = null) {
-    const endpoint = genre ? `/?genre=${encodeURIComponent(genre)}` : '/';
+    const endpoint = genre ? `/books?genre=${encodeURIComponent(genre)}` : '/books';
     return await fetchAPI(endpoint);
 }
 
 async function getBookDetails(bookId) {
-    return await fetchAPI(`/${bookId}`);
+    return await fetchAPI(`/books/${bookId}`);
 }
 
 async function rateBook(bookId, rating) {
@@ -40,7 +40,7 @@ async function rateBook(bookId, rating) {
 }
 
 async function getGenres() {
-    return await fetchAPI('/genres');
+    return await fetchAPI('/books/genres');
 }
 
 // Novia AI Assistant functions

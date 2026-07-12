@@ -28,7 +28,11 @@
 
         // Assume user is logged in and userId is stored in localStorage
         const userData = JSON.parse(localStorage.getItem('echoreads_user') || '{}');
-        const userId = userData.userId || 'demo-user-id'; // Fallback for demo
+        const userId = userData.userId;
+
+        if (!userId) {
+            window.location.href = 'signin.html';
+        }
 
         async function fetchCart() {
             try {

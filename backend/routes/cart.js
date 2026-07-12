@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const CartItem = require('../models/CartItem');
 const User = require('../models/User');
 const Book = require('../models/Book');
@@ -11,6 +12,10 @@ router.post('/', async (req, res) => {
     const { bookId, quantity = 1 } = req.body || {};
     if (!userId) return res.status(401).json({ success: false, message: 'Missing user id' });
     if (!bookId) return res.status(400).json({ success: false, message: 'bookId is required' });
+
+    if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(bookId)) {
+      return res.status(400).json({ success: false, message: 'Invalid ID format' });
+    }
 
     const [user, book] = await Promise.all([
       User.findById(userId),
@@ -37,6 +42,9 @@ router.get('/mine', async (req, res) => {
   try {
     const userId = req.header('x-user-id') || req.query.userId;
     if (!userId) return res.status(401).json({ success: false, message: 'Missing user id' });
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.json({ success: true, data: [] });
+    }
     const items = await CartItem.find({ user: userId }).sort({ createdAt: -1 }).populate('book', 'title genre price');
     res.json({ success: true, data: items });
   } catch (err) {
@@ -49,6 +57,9 @@ router.delete('/:id', async (req, res) => {
   try {
     const userId = req.header('x-user-id') || req.body.userId;
     if (!userId) return res.status(401).json({ success: false, message: 'Missing user id' });
+    if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ success: false, message: 'Invalid ID format' });
+    }
     const deleted = await CartItem.findOneAndDelete({ _id: req.params.id, user: userId });
     if (!deleted) return res.status(404).json({ success: false, message: 'Item not found' });
     res.json({ success: true });

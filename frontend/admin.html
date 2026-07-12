@@ -57,7 +57,7 @@
 
         async function fetchBooks() {
             try {
-                const response = await fetch(`${API_BASE}/`);
+                const response = await fetch(`${API_BASE}/books`);
                 const data = await response.json();
                 if (data.success) {
                     displayBooks(data.data);
@@ -79,18 +79,22 @@
             }
 
             orders.forEach(order => {
+                const bookTitle = order.book?.title || 'Unknown Book';
+                const bookGenre = order.book?.genre || 'N/A';
+                const customerName = order.userName || order.user?.name || 'Unknown';
+                const customerEmail = order.userEmail || order.user?.email || 'N/A';
                 const orderCard = `
                     <div class="col-md-6 col-lg-4 mb-4">
                         <div class="card h-100">
                             <div class="card-body">
-                                <h5 class="card-title">${order.book.title}</h5>
+                                <h5 class="card-title">${bookTitle}</h5>
                                 <p class="card-text">
-                                    <strong>Customer:</strong> ${order.userName || order.user.name}<br>
-                                    <strong>Email:</strong> ${order.userEmail || order.user.email || 'N/A'}<br>
+                                    <strong>Customer:</strong> ${customerName}<br>
+                                    <strong>Email:</strong> ${customerEmail}<br>
                                     <strong>Address:</strong> ${order.address || 'N/A'}<br>
                                     <strong>Pincode:</strong> ${order.pincode || 'N/A'}<br>
                                     <strong>Payment:</strong> ${order.paymentMethod || 'N/A'}<br>
-                                    <strong>Genre:</strong> ${order.book.genre}<br>
+                                    <strong>Genre:</strong> ${bookGenre}<br>
                                     <strong>Price:</strong> $${order.price}<br>
                                     <strong>Order Date:</strong> ${new Date(order.createdAt).toLocaleDateString()}
                                 </p>

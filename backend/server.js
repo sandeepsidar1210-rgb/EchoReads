@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
@@ -5,7 +6,6 @@ const path = require('path');
 
 const app = express();
 const port = process.env.PORT || 3000;
-require('dotenv').config();
 
 
 mongoose.connect(process.env.DATABASE_URL)
@@ -20,7 +20,7 @@ mongoose.connect(process.env.DATABASE_URL)
 app.use(cors());
 app.use(express.json());
 app.use('/api/purchases', require('./routes/purchases'));
-app.use('/api', require('./routes/books'));
+app.use('/api/books', require('./routes/books'));
 app.use('/api/novia', require('./routes/novia'));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/cart', require('./routes/cart'));
@@ -41,4 +41,8 @@ app.get(['/', '/index.html', '/browse.html', '/signin.html', '/preview.html', '/
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({ success: false, message: 'Something went wrong!' });
+});
+
+app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
 });

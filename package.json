@@ -1,5 +1,18 @@
 {
+  "name": "echoreads",
+  "private": true,
+  "scripts": {
+    "dev:backend": "npm --prefix ./backend run dev",
+    "start:backend": "npm --prefix ./backend run start",
+    "dev:frontend": "npm --prefix ./frontend run dev",
+    "start:frontend": "npm --prefix ./frontend run start",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "start": "npm --prefix ./backend run start"
+  },
   "dependencies": {
     "seed": "^0.4.4"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
   }
 }

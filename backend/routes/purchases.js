@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const Purchase = require('../models/Purchase');
 const User = require('../models/User');
 const Book = require('../models/Book');
@@ -11,7 +12,11 @@ router.post('/', async (req, res) => {
     const userId = req.header('x-user-id') || req.body.userId;
     const { bookId, price, name, address, pincode, paymentMethod } = req.body || {};
     if (!userId) return res.status(401).json({ success: false, message: 'Missing user id' });
-    if (!bookId || typeof price !== 'number') return res.status(400).json({ success: false, message: 'bookId and price are required' });
+    if (!bookId) return res.status(400).json({ success: false, message: 'bookId is required' });
+
+    if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(bookId)) {
+      return res.status(400).json({ success: false, message: 'Invalid ID format' });
+    }
 
     const [user, book] = await Promise.all([
       User.findById(userId),
@@ -25,7 +30,7 @@ router.post('/', async (req, res) => {
       userName: name || user.name,
       userEmail: user.email || null,
       book: book._id,
-      price,
+      price: book.price, // Trust database price instead of req.body.price
       address: address || '',
       pincode: pincode || '',
       paymentMethod: paymentMethod || 'Cash on Delivery'
@@ -41,6 +46,9 @@ router.get('/mine', async (req, res) => {
   try {
     const userId = req.header('x-user-id') || req.query.userId;
     if (!userId) return res.status(401).json({ success: false, message: 'Missing user id' });
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.json({ success: true, data: [] });
+    }
     const items = await Purchase.find({ user: userId }).sort({ createdAt: -1 }).populate('book', 'title genre price');
     res.json({ success: true, data: items });
   } catch (err) {
@@ -54,6 +62,9 @@ router.post('/checkout', async (req, res) => {
     const userId = req.header('x-user-id') || req.body.userId;
     const { name, address, pincode, paymentMethod } = req.body || {};
     if (!userId) return res.status(401).json({ success: false, message: 'Missing user id' });
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ success: false, message: 'Invalid ID format' });
+    }
     if (!address || !pincode || !paymentMethod) return res.status(400).json({ success: false, message: 'Address, pincode, and payment method are required' });
 
     const user = await User.findById(userId);

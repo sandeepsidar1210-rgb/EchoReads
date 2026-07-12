@@ -1,5 +1,4 @@
 # EchoReads
-<<<<<<< HEAD
 
 A full-stack digital book platform featuring a curated collection of literary works, enabling users to browse, purchase, and manage their book collection across web and mobile platforms.
 
@@ -307,6 +306,4 @@ For support, email support@echoreads.com or open an issue on GitHub.
 - Project Gutenberg for providing access to public domain books
 - Flutter community for excellent documentation
 - MongoDB for robust database solutions
-=======
-EchoReads is a full-stack digital book platform featuring a curated collection of literary works, enabling users to browse, purchase, and manage their book collection across web and mobile platforms.
->>>>>>> a0e6521a08c06c757f9051bf366570caa3dcee74
+
