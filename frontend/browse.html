@@ -89,8 +89,12 @@
     </div>
 
     <script>
+        const token = localStorage.getItem('echoreads_token');
+        if (!token) {
+            window.location.href = 'signin.html';
+        }
         // Configure API URL
-const API_BASE_URL = 'http://localhost:3000/api';
+        const API_BASE_URL = 'http://localhost:3000/api';
 
         // Fetch and display books
         async function fetchBooks(genre = null) {
@@ -99,7 +103,9 @@ const API_BASE_URL = 'http://localhost:3000/api';
                 const url = genre 
                     ? `${API_BASE_URL}/books?genre=${encodeURIComponent(genre)}&sort=${encodeURIComponent(sort)}`
                     : `${API_BASE_URL}/books?sort=${encodeURIComponent(sort)}`;
-                const response = await fetch(url);
+                const response = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
                 const data = await response.json();
                 
                 if (data.success) {
@@ -148,7 +154,9 @@ const API_BASE_URL = 'http://localhost:3000/api';
         // Show book details modal
         async function showBookDetails(bookId) {
             try {
-const response = await fetch(`${API_BASE_URL}/books/${bookId}`);
+                const response = await fetch(`${API_BASE_URL}/books/${bookId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
                 const data = await response.json();
                 
                 if (data.success) {
@@ -234,7 +242,9 @@ const response = await fetch(`${API_BASE_URL}/books/${bookId}`);
         // Initialize genre filters
         async function initializeGenreFilters() {
             try {
-                const response = await fetch(`${API_BASE_URL}/books/genres`);
+                const response = await fetch(`${API_BASE_URL}/books/genres`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
                 const data = await response.json();
                 
                 if (data.success) {
@@ -269,10 +279,9 @@ const response = await fetch(`${API_BASE_URL}/books/${bookId}`);
 
         // Cart helpers
         async function addToCart(bookId, title){
-          const u = currentUser();
-          if(!u){ alert('Please sign in first.'); window.location.href='signin.html'; return; }
+          if(!token){ alert('Please sign in first.'); window.location.href='signin.html'; return; }
           try{
-            const r = await fetch('http://localhost:3000/api/cart',{method:'POST',headers:{'Content-Type':'application/json','x-user-id':u.userId},body:JSON.stringify({bookId,quantity:1})});
+            const r = await fetch('http://localhost:3000/api/cart',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({bookId,quantity:1})});
             const d = await r.json(); if(!d.success) throw new Error();
             alert(`Added to cart: ${title}`);
           }catch{ alert('Failed to add to cart.'); }
@@ -337,7 +346,7 @@ const response = await fetch(`${API_BASE_URL}/books/${bookId}`);
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
-                  'x-user-id': u.userId
+                  'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({
                   bookId,

@@ -319,6 +319,7 @@
             // Sign out functionality
             document.getElementById('signout-btn').addEventListener('click', function() {
                 localStorage.removeItem('echoreads_user');
+                localStorage.removeItem('echoreads_token');
                 location.reload();
             });
         });

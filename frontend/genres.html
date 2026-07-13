@@ -28,11 +28,15 @@
     <div id="genre-list" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6"></div>
   </main>
   <script>
+    const token = localStorage.getItem('echoreads_token');
+    if (!token) {
+        window.location.href = 'signin.html';
+    }
     const API='http://localhost:3000/api/books/genres';
     const FALLBACK=['Fantasy','Science Fiction','Mystery','Romance','Thriller','Horror','Biography','History','Self-Help','Non-Fiction'];
     async function load(){
       let genres = [];
-      try { const res=await fetch(API); const data=await res.json(); if (data.success) genres = data.data; } catch {}
+      try { const res=await fetch(API, { headers: { 'Authorization': `Bearer ${token}` } }); const data=await res.json(); if (data.success) genres = data.data; } catch {}
       if (!Array.isArray(genres) || !genres.length) genres = FALLBACK;
       const list=document.getElementById('genre-list');
       list.innerHTML=(genres).map(g=>`

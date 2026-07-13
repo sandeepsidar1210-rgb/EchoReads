@@ -17,13 +17,15 @@ mongoose.connect(process.env.DATABASE_URL)
 
 
 
+const { protect } = require('./middleware/auth');
+
 app.use(cors());
 app.use(express.json());
-app.use('/api/purchases', require('./routes/purchases'));
-app.use('/api/books', require('./routes/books'));
-app.use('/api/novia', require('./routes/novia'));
 app.use('/api/auth', require('./routes/auth'));
-app.use('/api/cart', require('./routes/cart'));
+app.use('/api/books', protect, require('./routes/books'));
+app.use('/api/novia', protect, require('./routes/novia'));
+app.use('/api/purchases', protect, require('./routes/purchases'));
+app.use('/api/cart', protect, require('./routes/cart'));
 
 // Serve frontend statically
 const frontendDir = path.resolve(__dirname, '../frontend');

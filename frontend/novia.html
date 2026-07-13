@@ -46,6 +46,10 @@
     </div>
   </main>
   <script>
+    const token = localStorage.getItem('echoreads_token');
+    if (!token) {
+        window.location.href = 'signin.html';
+    }
     const API = 'http://localhost:3000/api/novia/chat';
     const messages = document.getElementById('messages');
     const input = document.getElementById('input');
@@ -58,7 +62,7 @@
     }
     async function send(msg){
       const text = (msg??input.value).trim(); if(!text) return; input.value=''; bubble(text,true); typing.classList.remove('hidden');
-      try{ const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text})}); const data=await res.json(); typing.classList.add('hidden'); bubble(data.response||'No response.'); }
+      try{ const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({message:text})}); const data=await res.json(); typing.classList.add('hidden'); bubble(data.response||'No response.'); }
       catch{ typing.classList.add('hidden'); bubble('Error contacting Novia.'); }
     }
     sendBtn.onclick=()=>send(); input.addEventListener('keypress',e=>{ if(e.key==='Enter') send(); });

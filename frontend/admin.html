@@ -38,11 +38,21 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        const token = localStorage.getItem('echoreads_token');
+        if (!token) {
+            window.location.href = 'signin.html';
+        }
         const API_BASE = 'http://localhost:3000/api';
 
         async function fetchOrders() {
             try {
-                const response = await fetch(`${API_BASE}/purchases`);
+                const response = await fetch(`${API_BASE}/purchases`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (response.status === 403) {
+                    document.getElementById('orders-list').innerHTML = '<div class="col-12"><div class="alert alert-danger">Access Denied: You do not have administrator privileges.</div></div>';
+                    return;
+                }
                 const data = await response.json();
                 if (data.success) {
                     displayOrders(data.data);
@@ -57,7 +67,9 @@
 
         async function fetchBooks() {
             try {
-                const response = await fetch(`${API_BASE}/books`);
+                const response = await fetch(`${API_BASE}/books`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
                 const data = await response.json();
                 if (data.success) {
                     displayBooks(data.data);

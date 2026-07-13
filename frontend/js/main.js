@@ -3,14 +3,24 @@ const API_BASE_URL = 'http://localhost:3000/api';
 
 // Utility function for making API calls
 async function fetchAPI(endpoint, options = {}) {
+    const token = localStorage.getItem('echoreads_token');
     try {
         const response = await fetch(`${API_BASE_URL}${endpoint}`, {
             ...options,
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': token ? `Bearer ${token}` : '',
                 ...options.headers
             }
         });
+        if (response.status === 401) {
+            localStorage.removeItem('echoreads_token');
+            localStorage.removeItem('echoreads_user');
+            if (!window.location.pathname.includes('signin.html')) {
+                window.location.href = 'signin.html';
+                return null;
+            }
+        }
         const data = await response.json();
         if (!response.ok) {
             throw new Error(data.message || 'Something went wrong');

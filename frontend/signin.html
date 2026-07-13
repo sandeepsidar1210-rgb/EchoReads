@@ -3,43 +3,172 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sign In - EchoReads</title>
+  <title>Sign In / Sign Up - EchoReads</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <style>body{background:radial-gradient(at 70% 30%, #171730, #0a0a1a);color:#e2e8f0;font-family:Inter,system-ui,sans-serif}</style>
-</head>
-<body class="min-h-screen grid place-items-center">
-  <div class="absolute top-4 left-4">
-    <a href="index.html" class="text-cyan-400 hover:text-cyan-300 text-sm">← Back to Home Page</a>
-  </div>
-  <div class="w-full max-w-md bg-slate-800/70 rounded-2xl p-8 shadow-xl">
-    <h1 class="text-3xl font-extrabold text-white mb-6 text-center">Sign In</h1>
-    <form id="form" class="space-y-4">
-      <div>
-        <label class="block text-sm text-gray-300 mb-1">Name</label>
-        <input id="name" class="w-full bg-gray-700 rounded px-4 py-2 text-white" placeholder="Your name" />
-      </div>
-      <div>
-        <label class="block text-sm text-gray-300 mb-1">Email (optional)</label>
-        <input id="email" type="email" class="w-full bg-gray-700 rounded px-4 py-2 text-white" placeholder="you@example.com" />
-      </div>
-      <button class="w-full bg-cyan-600 hover:bg-cyan-500 text-white rounded px-4 py-2">Continue</button>
-    </form>
-    <p id="msg" class="text-sm text-center text-gray-400 mt-4"></p>
-  </div>
+  <style>
+    body {
+      background: radial-gradient(at 70% 30%, #171730, #0a0a1a);
+      color: #e2e8f0;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+    .glass {
+      background: rgba(30, 41, 59, 0.45);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+  </style>
   <script>
-    const API='http://localhost:3000/api/auth/signin';
-    const form=document.getElementById('form'); const msg=document.getElementById('msg');
-    form.addEventListener('submit', async (e)=>{
-      e.preventDefault(); msg.textContent='Signing in...';
-      const name=document.getElementById('name').value.trim();
-      const email=document.getElementById('email').value.trim();
-      if(!name && !email){ msg.textContent='Enter name or email.'; return; }
-      try{
-        const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email})});
-        const d=await r.json(); if(!d.success) throw new Error(d.message||'Failed');
-        localStorage.setItem('echoreads_user', JSON.stringify(d.data));
-        msg.textContent='Signed in. Redirecting...'; setTimeout(()=>{ window.location.href='index.html'; }, 700);
-      }catch(err){ msg.textContent='Sign in failed. Try again.'; }
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'accent-teal': '#14b8a6',
+            'accent-gold': '#fbbf24',
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="min-h-screen flex flex-col justify-center items-center p-4">
+  <div class="absolute top-6 left-6">
+    <a href="index.html" class="text-accent-teal hover:text-teal-400 font-semibold transition flex items-center gap-1">
+      &larr; Back to Home
+    </a>
+  </div>
+
+  <div class="w-full max-w-md glass rounded-3xl p-8 shadow-2xl transition-all duration-300">
+    <div class="flex justify-center mb-6">
+      <span class="text-3xl font-extrabold text-accent-gold">Echo<span class="text-white">Reads</span></span>
+    </div>
+    
+    <!-- Tab Toggles -->
+    <div class="flex rounded-full bg-slate-900/60 p-1 mb-8 border border-white/5">
+      <button id="tab-login" class="flex-1 py-2 text-center text-sm font-semibold rounded-full bg-accent-teal text-white transition-all duration-300">
+        Sign In
+      </button>
+      <button id="tab-register" class="flex-1 py-2 text-center text-sm font-semibold rounded-full text-gray-400 hover:text-white transition-all duration-300">
+        Sign Up
+      </button>
+    </div>
+
+    <!-- Title and Description -->
+    <h1 id="auth-title" class="text-2xl font-bold text-white text-center mb-1">Welcome Back</h1>
+    <p id="auth-desc" class="text-sm text-gray-400 text-center mb-6">Sign in to continue exploring your library</p>
+
+    <!-- Form -->
+    <form id="auth-form" class="space-y-5">
+      <!-- Name field (shown only for register) -->
+      <div id="name-field" class="hidden">
+        <label class="block text-sm text-gray-300 mb-1.5 font-medium">Full Name</label>
+        <input id="name" type="text" class="w-full bg-slate-900/50 border border-slate-700/80 focus:border-accent-teal focus:ring-1 focus:ring-accent-teal rounded-xl px-4 py-3 text-white outline-none transition" placeholder="John Doe" />
+      </div>
+
+      <!-- Email field -->
+      <div>
+        <label class="block text-sm text-gray-300 mb-1.5 font-medium">Email Address</label>
+        <input id="email" type="email" required class="w-full bg-slate-900/50 border border-slate-700/80 focus:border-accent-teal focus:ring-1 focus:ring-accent-teal rounded-xl px-4 py-3 text-white outline-none transition" placeholder="you@example.com" />
+      </div>
+
+      <!-- Password field -->
+      <div>
+        <label class="block text-sm text-gray-300 mb-1.5 font-medium">Password</label>
+        <input id="password" type="password" required class="w-full bg-slate-900/50 border border-slate-700/80 focus:border-accent-teal focus:ring-1 focus:ring-accent-teal rounded-xl px-4 py-3 text-white outline-none transition" placeholder="••••••••" />
+      </div>
+
+      <!-- Action Button -->
+      <button type="submit" id="auth-submit" class="w-full py-3.5 mt-2 bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-400 hover:to-cyan-500 text-white rounded-xl font-bold shadow-lg shadow-teal-500/10 hover:shadow-teal-500/20 transform hover:-translate-y-0.5 transition duration-200">
+        Sign In
+      </button>
+    </form>
+
+    <p id="msg" class="text-sm text-center font-medium mt-4 min-h-[1.5rem]"></p>
+  </div>
+
+  <script>
+    const API_BASE = 'http://localhost:3000/api/auth';
+    let mode = 'login';
+
+    const tabLogin = document.getElementById('tab-login');
+    const tabRegister = document.getElementById('tab-register');
+    const authTitle = document.getElementById('auth-title');
+    const authDesc = document.getElementById('auth-desc');
+    const nameField = document.getElementById('name-field');
+    const authSubmit = document.getElementById('auth-submit');
+    const authForm = document.getElementById('auth-form');
+    const msg = document.getElementById('msg');
+
+    const nameInput = document.getElementById('name');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+
+    function switchMode(newMode) {
+      mode = newMode;
+      msg.textContent = '';
+      if (mode === 'login') {
+        tabLogin.className = 'flex-1 py-2 text-center text-sm font-semibold rounded-full bg-accent-teal text-white transition-all duration-300';
+        tabRegister.className = 'flex-1 py-2 text-center text-sm font-semibold rounded-full text-gray-400 hover:text-white transition-all duration-300';
+        authTitle.textContent = 'Welcome Back';
+        authDesc.textContent = 'Sign in to continue exploring your library';
+        nameField.classList.add('hidden');
+        nameInput.required = false;
+        authSubmit.textContent = 'Sign In';
+      } else {
+        tabRegister.className = 'flex-1 py-2 text-center text-sm font-semibold rounded-full bg-accent-teal text-white transition-all duration-300';
+        tabLogin.className = 'flex-1 py-2 text-center text-sm font-semibold rounded-full text-gray-400 hover:text-white transition-all duration-300';
+        authTitle.textContent = 'Create Account';
+        authDesc.textContent = 'Join EchoReads and build your library';
+        nameField.classList.remove('hidden');
+        nameInput.required = true;
+        authSubmit.textContent = 'Create Account';
+      }
+    }
+
+    tabLogin.addEventListener('click', () => switchMode('login'));
+    tabRegister.addEventListener('click', () => switchMode('register'));
+
+    authForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      msg.className = 'text-sm text-center font-medium mt-4 text-cyan-400';
+      msg.textContent = mode === 'login' ? 'Signing in...' : 'Creating account...';
+
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+      const payload = { email, password };
+
+      if (mode === 'register') {
+        payload.name = nameInput.value.trim();
+      }
+
+      const endpoint = mode === 'login' ? `${API_BASE}/login` : `${API_BASE}/register`;
+
+      try {
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok || !data.success) {
+          throw new Error(data.message || 'Authentication failed');
+        }
+
+        localStorage.setItem('echoreads_token', data.data.token);
+        localStorage.setItem('echoreads_user', JSON.stringify(data.data.user));
+
+        msg.className = 'text-sm text-center font-medium mt-4 text-emerald-400';
+        msg.textContent = mode === 'login' ? 'Signed in successfully. Redirecting...' : 'Registered successfully. Redirecting...';
+        
+        setTimeout(() => {
+          window.location.href = 'index.html';
+        }, 700);
+
+      } catch (err) {
+        msg.className = 'text-sm text-center font-medium mt-4 text-rose-400';
+        msg.textContent = err.message || 'An error occurred. Please try again.';
+      }
     });
   </script>
 </body>

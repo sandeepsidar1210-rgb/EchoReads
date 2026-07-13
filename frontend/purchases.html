@@ -33,9 +33,11 @@
     <div id="empty" class="hidden text-gray-400">No purchases yet.</div>
   </main>
   <script>
+    const token = localStorage.getItem('echoreads_token');
+    if (!token) {
+        window.location.href = 'signin.html';
+    }
     const API='http://localhost:3000/api/purchases/mine';
-    function getUser(){ try { return JSON.parse(localStorage.getItem('echoreads_user')||'null'); } catch { return null; } }
-    function guard(){ const u=getUser(); if(!u){ window.location.href='signin.html'; return null; } return u; }
     function card(p){ const b=p.book||{}; return `
       <div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg">
         ${b.imageUrl ? `<img src="${b.imageUrl}" alt="${b.title||'Book cover'}" class="w-full h-40 object-cover" />` : ''}
@@ -53,10 +55,13 @@
       </div>`; }
     let ALL=[];
     async function load(){
-      const u=guard(); if(!u) return;
-      const r=await fetch(API,{headers:{'x-user-id':u.userId}}); const d=await r.json();
-      ALL=(d.data||[]);
-      render(ALL);
+      try {
+        const r=await fetch(API,{headers:{'Authorization':`Bearer ${token}`}}); const d=await r.json();
+        ALL=(d.data||[]);
+        render(ALL);
+      } catch (err) {
+        console.error(err);
+      }
     }
     function render(items){
       const el=document.getElementById('list');
@@ -69,7 +74,11 @@
     }
     document.getElementById('go').onclick=search;
     document.getElementById('q').addEventListener('keypress',e=>{ if(e.key==='Enter') search(); });
-    document.getElementById('signout').onclick=()=>{ localStorage.removeItem('echoreads_user'); window.location.href='index.html'; };
+    document.getElementById('signout').onclick=()=>{ 
+      localStorage.removeItem('echoreads_token');
+      localStorage.removeItem('echoreads_user');
+      window.location.href='index.html';
+    };
     load();
   </script>
 </body>
