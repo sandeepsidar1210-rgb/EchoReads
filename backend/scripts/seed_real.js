@@ -1,5 +1,18 @@
 const { connectDB } = require('../db');
 const Book = require('../models/Book');
+const https = require('https');
+
+function httpsGetJson(url) {
+  return new Promise((resolve, reject) => {
+    https.get(url, { headers: { 'User-Agent': 'EchoReads/1.0' } }, (response) => {
+      let data = '';
+      response.on('data', chunk => { data += chunk; });
+      response.on('end', () => {
+        try { resolve(JSON.parse(data)); } catch (e) { reject(e); }
+      });
+    }).on('error', reject);
+  });
+}
 
 function mk(title, author, genre, summary, purchaseId=null){
   const seed = encodeURIComponent(title);
@@ -8,7 +21,6 @@ function mk(title, author, genre, summary, purchaseId=null){
     description: summary.slice(0, 160),
     summary,
     content: summary + "\n\n" + summary + "\n\n" + summary,
-    // Use a JPEG placeholder so Flutter/web never has to decode SVG
     imageUrl: `https://picsum.photos/seed/${seed}/600/800.jpg`,
     price: Math.round((4.99 + Math.random()*10) * 100)/100,
     rating: Math.round((3.8 + Math.random()*1.2) * 10)/10,
@@ -83,10 +95,51 @@ const REALS = [
 
 async function run(){
   await connectDB();
-  // Replace existing with real classics only
+  console.log('Clearing existing books...');
   await Book.deleteMany({});
-  const created = await Book.insertMany(REALS);
-  console.log(`Seeded ${created.length} real books.`);
+  
+  console.log(`Starting cover image resolution for ${REALS.length} books...`);
+  const finalBooks = [];
+  
+  for (let i = 0; i < REALS.length; i++) {
+    const book = REALS[i];
+    console.log(`[${i + 1}/${REALS.length}] Resolving cover for "${book.title}"...`);
+    let coverId = null;
+    
+    // Search with Title + Author
+    try {
+      const queryUrl = `https://openlibrary.org/search.json?title=${encodeURIComponent(book.title)}&author=${encodeURIComponent(book.author)}&fields=cover_i&limit=1`;
+      const data = await httpsGetJson(queryUrl);
+      if (data.docs && data.docs.length > 0 && data.docs[0].cover_i) {
+        coverId = data.docs[0].cover_i;
+      }
+    } catch (e) {}
+    
+    // Search with Title only
+    if (!coverId) {
+      try {
+        const queryUrl = `https://openlibrary.org/search.json?title=${encodeURIComponent(book.title)}&fields=cover_i&limit=1`;
+        const data = await httpsGetJson(queryUrl);
+        if (data.docs && data.docs.length > 0 && data.docs[0].cover_i) {
+          coverId = data.docs[0].cover_i;
+        }
+      } catch (e) {}
+    }
+    
+    if (coverId) {
+      book.imageUrl = `https://covers.openlibrary.org/b/id/${coverId}-L.jpg`;
+      console.log(`  ✔ Found cover: ${book.imageUrl}`);
+    } else {
+      console.log(`  ✕ No cover found. Using placeholder.`);
+    }
+    
+    finalBooks.push(book);
+    // Throttle requests slightly
+    await new Promise(resolve => setTimeout(resolve, 200));
+  }
+  
+  const created = await Book.insertMany(finalBooks);
+  console.log(`Seeded ${created.length} real books with high-quality original covers.`);
   process.exit(0);
 }
 
