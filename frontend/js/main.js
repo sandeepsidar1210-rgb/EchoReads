@@ -1,5 +1,5 @@
 // API Configuration
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = '/api';
 
 // Utility function for making API calls
 async function fetchAPI(endpoint, options = {}) {

@@ -4,6 +4,7 @@ const User = require('../models/User');
 const protect = async (req, res, next) => {
   let token;
 
+  // 1. Check JWT Authorization Header
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith('Bearer')
@@ -24,8 +25,27 @@ const protect = async (req, res, next) => {
     }
   }
 
-  if (!token) {
-    return res.status(401).json({ success: false, message: 'Not authorized, no token' });
+  // 2. Check x-user-id Header (for Mobile)
+  const xUserId = req.headers['x-user-id'];
+  if (xUserId) {
+    try {
+      const mongoose = require('mongoose');
+      if (!mongoose.Types.ObjectId.isValid(xUserId)) {
+        return res.status(401).json({ success: false, message: 'Not authorized, invalid user ID format' });
+      }
+      req.user = await User.findById(xUserId).select('-password');
+      if (!req.user) {
+        return res.status(401).json({ success: false, message: 'Not authorized, user not found' });
+      }
+      return next();
+    } catch (error) {
+      console.error(error);
+      return res.status(401).json({ success: false, message: 'Not authorized, database error' });
+    }
+  }
+
+  if (!token && !xUserId) {
+    return res.status(401).json({ success: false, message: 'Not authorized, no token or user ID provided' });
   }
 };
 

@@ -1,11 +1,10 @@
-class ApiConfig {
-  /// Base URL for the EchoReads backend used by the web app.
+﻿class ApiConfig {
+  /// Base URL for the EchoReads backend.
   ///
-  /// On a real device or emulator you may need to change `localhost`:
-  /// - Android emulator: use http://10.0.2.2:3000
-  /// - iOS simulator: use http://localhost:3000
-  // static const String baseUrl = 'http://172.16.143.85:3000/api';
-  static const String baseUrl = 'http://192.168.137.1:3000/api';
-  
-  
+  /// Auto-updated by start-echoreads.ps1 on each launch.
+  /// Current LAN IP: 10.157.111.119
+  ///
+  /// If you change WiFi networks, restart PC or re-run start-echoreads.ps1
+  /// then rebuild the Flutter app: flutter run
+  static const String baseUrl = 'http://10.157.111.119:3000/api';
 }

@@ -10,6 +10,55 @@ const generateToken = (id) => {
   });
 };
 
+// Simple sign-in for mobile client: find or create by name/email
+router.post('/signin', async (req, res) => {
+  try {
+    const { name } = req.body || {};
+    let email = req.body?.email;
+    
+    if (typeof email === 'string') {
+      email = email.trim().toLowerCase();
+      if (email === '') email = undefined;
+    }
+    const trimmedName = typeof name === 'string' ? name.trim() : '';
+
+    if (!trimmedName && !email) {
+      return res.status(400).json({ success: false, message: 'Name or email is required' });
+    }
+
+    let user = null;
+    if (email) {
+      user = await User.findOne({ email });
+    }
+    if (!user && trimmedName) {
+      user = await User.findOne({ name: trimmedName });
+    }
+    
+    if (!user) {
+      const targetEmail = email || `${trimmedName.replace(/\s+/g, '_').toLowerCase() || 'user'}_${Date.now()}@echoreads.local`;
+      const targetPassword = 'mobile_user_default_password';
+      user = await User.create({
+        name: trimmedName || (email ? email.split('@')[0] : 'Mobile User'),
+        email: targetEmail,
+        password: targetPassword,
+        role: 'user'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        userId: user._id.toString(),
+        name: user.name,
+        email: user.email || null
+      }
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Failed to sign in' });
+  }
+});
+
 // Register user
 router.post('/register', async (req, res) => {
   try {

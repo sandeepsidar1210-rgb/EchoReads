@@ -32,7 +32,7 @@
     if (!token) {
         window.location.href = 'signin.html';
     }
-    const API='http://localhost:3000/api/books/genres';
+    const API='/api/books/genres';
     const FALLBACK=['Fantasy','Science Fiction','Mystery','Romance','Thriller','Horror','Biography','History','Self-Help','Non-Fiction'];
     async function load(){
       let genres = [];
@@ -60,7 +60,8 @@
     // Sign out functionality
     document.getElementById('signout-btn').addEventListener('click', function() {
         localStorage.removeItem('echoreads_user');
-        location.reload();
+        localStorage.removeItem('echoreads_token');
+        window.location.href = 'index.html';
     });
   </script>
 </body>

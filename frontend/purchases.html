@@ -37,7 +37,7 @@
     if (!token) {
         window.location.href = 'signin.html';
     }
-    const API='http://localhost:3000/api/purchases/mine';
+    const API='/api/purchases/mine';
     function card(p){ const b=p.book||{}; return `
       <div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg">
         ${b.imageUrl ? `<img src="${b.imageUrl}" alt="${b.title||'Book cover'}" class="w-full h-40 object-cover" />` : ''}

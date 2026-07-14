@@ -3,9 +3,24 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const path = require('path');
+const os = require('os');
 
 const app = express();
 const port = process.env.PORT || 3000;
+const host = '0.0.0.0'; // Listen on all interfaces so mobile/WiFi devices can connect
+
+// Helper: get the LAN IPv4 address for display
+function getLanIp() {
+  const nets = os.networkInterfaces();
+  for (const name of Object.keys(nets)) {
+    for (const net of nets[name]) {
+      if (net.family === 'IPv4' && !net.internal) {
+        return net.address;
+      }
+    }
+  }
+  return 'localhost';
+}
 
 
 mongoose.connect(process.env.DATABASE_URL)
@@ -103,6 +118,12 @@ app.use((err, req, res, next) => {
     res.status(500).json({ success: false, message: 'Something went wrong!' });
 });
 
-app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
+app.listen(port, host, () => {
+    const lanIp = getLanIp();
+    console.log('='.repeat(55));
+    console.log(`  ✅ EchoReads backend is RUNNING`);
+    console.log(`  🌐 Web:    http://localhost:${port}`);
+    console.log(`  📱 Mobile: http://${lanIp}:${port}/api`);
+    console.log(`  👉 Set this IP in api_config.dart if it changed`);
+    console.log('='.repeat(55));
 });

@@ -94,7 +94,7 @@
             window.location.href = 'signin.html';
         }
         // Configure API URL
-        const API_BASE_URL = 'http://localhost:3000/api';
+        const API_BASE_URL = '/api';
 
         // Fetch and display books
         async function fetchBooks(genre = null) {
@@ -281,7 +281,7 @@
         async function addToCart(bookId, title){
           if(!token){ alert('Please sign in first.'); window.location.href='signin.html'; return; }
           try{
-            const r = await fetch('http://localhost:3000/api/cart',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({bookId,quantity:1})});
+            const r = await fetch('/api/cart',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({bookId,quantity:1})});
             const d = await r.json(); if(!d.success) throw new Error();
             alert(`Added to cart: ${title}`);
           }catch{ alert('Failed to add to cart.'); }
@@ -342,7 +342,7 @@
             const paymentMethod = document.querySelector('input[name="payment-method"]:checked').value;
             
             try {
-              const r = await fetch('http://localhost:3000/api/purchases', {
+              const r = await fetch('/api/purchases', {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
@@ -407,7 +407,8 @@
             // Sign out functionality
             document.getElementById('signout-btn').addEventListener('click', function() {
                 localStorage.removeItem('echoreads_user');
-                location.reload();
+                localStorage.removeItem('echoreads_token');
+                window.location.href = 'index.html';
             });
         });
     </script>
