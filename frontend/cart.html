@@ -3,26 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EchoReads Cart</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>My Cart - EchoReads</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: radial-gradient(at 70% 30%, #111827, #030712);
+            color: #e5e7eb;
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+        .glass {
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+    </style>
 </head>
-<body>
-    <div class="container mt-5">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="mb-0">EchoReads Shopping Cart</h1>
-            <button onclick="window.location.href='index.html'" class="btn btn-primary">Back to Home Page</button>
+<body class="min-h-screen flex flex-col">
+    <!-- Interactive Header -->
+    <header class="sticky top-0 z-40 bg-gray-900/80 backdrop-blur-md border-b border-gray-800/80">
+        <div class="container mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <button onclick="window.location.href='index.html'" class="bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 px-4 py-2 rounded-full text-sm font-medium transition">
+                    ← Home
+                </button>
+                <a href="index.html" class="text-2xl font-bold tracking-tight"><span class="text-emerald-400">Echo</span><span class="text-white">Reads</span></a>
+            </div>
+            <nav class="space-x-6 text-gray-400 font-medium">
+                <a class="hover:text-white transition" href="browse.html">Browse</a>
+                <a class="hover:text-white transition" href="genres.html">Genres</a>
+                <a class="hover:text-white transition" href="novia.html">Novia AI</a>
+                <a class="text-emerald-400 font-semibold" href="cart.html">Cart</a>
+            </nav>
         </div>
+    </header>
 
-        <div id="cart-list" class="row">
-            <!-- Cart items will be loaded here -->
+    <main class="container mx-auto px-6 py-12 flex-1 max-w-5xl">
+        <h1 class="text-4xl font-extrabold text-white mb-2 tracking-tight">Shopping Cart</h1>
+        <p class="text-gray-400 mb-8 text-sm">Review your selected literary works before unlocking digital access.</p>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Cart Items List -->
+            <div id="cart-list" class="lg:col-span-2 space-y-4">
+                <!-- Dynamically loaded -->
+                <div class="text-center p-12 text-gray-500">Loading your cart items...</div>
+            </div>
+
+            <!-- Cart Summary Summary -->
+            <div class="lg:col-span-1">
+                <div id="cart-summary-box" class="glass rounded-2xl p-6 shadow-xl border border-gray-850/60 sticky top-24">
+                    <h3 class="text-lg font-bold text-white mb-4 border-b border-gray-800 pb-3">Cart Summary</h3>
+                    <div id="cart-totals-area" class="space-y-4">
+                        <!-- Loaded by JS -->
+                    </div>
+                </div>
+            </div>
         </div>
+    </main>
 
-        <div id="cart-total" class="mt-4 text-end">
-            <!-- Total will be shown here -->
-        </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const token = localStorage.getItem('echoreads_token');
         if (!token) {
@@ -48,42 +85,69 @@
 
         function displayCart(items) {
             const cartList = document.getElementById('cart-list');
-            const cartTotal = document.getElementById('cart-total');
+            const totalsArea = document.getElementById('cart-totals-area');
             cartList.innerHTML = '';
 
-            if (items.length === 0) {
-                cartList.innerHTML = '<div class="col-12"><p class="text-center">Your cart is empty.</p></div>';
-                cartTotal.innerHTML = '';
+            if (!items || items.length === 0) {
+                cartList.innerHTML = `
+                    <div class="glass rounded-2xl p-12 text-center border border-gray-800/40">
+                        <p class="text-gray-400 mb-4">Your shopping cart is empty.</p>
+                        <a href="browse.html" class="inline-block px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-full text-sm font-semibold transition">
+                            Explore Books
+                        </a>
+                    </div>
+                `;
+                totalsArea.innerHTML = `
+                    <p class="text-gray-400 text-sm">Add books to your cart to begin checkout.</p>
+                `;
                 return;
             }
 
             let total = 0;
             items.forEach(item => {
-                const itemTotal = item.book ? (item.book.price * item.quantity) : 0;
+                const book = item.book || {};
+                const itemTotal = book.price ? (book.price * item.quantity) : 0;
                 total += itemTotal;
-                const bookTitle = item.book ? item.book.title : 'Unknown Book';
-                const bookGenre = item.book ? item.book.genre : 'N/A';
-                const bookPrice = item.book ? item.book.price : 0;
+
                 const itemCard = `
-                    <div class="col-md-6 col-lg-4 mb-4">
-                        <div class="card h-100">
-                            <div class="card-body">
-                                <h5 class="card-title">${bookTitle}</h5>
-                                <p class="card-text">
-                                    <strong>Genre:</strong> ${bookGenre}<br>
-                                    <strong>Price:</strong> $${bookPrice}<br>
-                                    <strong>Quantity:</strong> ${item.quantity}<br>
-                                    <strong>Subtotal:</strong> $${itemTotal.toFixed(2)}
-                                </p>
-                                <button class="btn btn-danger" onclick="removeFromCart('${item._id}')">Remove</button>
+                    <div class="glass rounded-2xl p-4 flex gap-4 items-center border border-gray-800/50 hover:border-cyan-500/20 transition duration-300">
+                        ${book.imageUrl ? `<img src="${book.imageUrl}" class="w-14 h-20 object-cover rounded shadow-md flex-shrink-0" />` : ''}
+                        <div class="flex-1 min-w-0">
+                            <h4 class="text-base font-semibold text-white truncate">${book.title || 'Unknown Book'}</h4>
+                            <p class="text-xs text-gray-400 truncate">by ${book.author || 'N/A'}</p>
+                            <div class="flex items-center gap-4 mt-2 text-xs">
+                                <span class="text-gray-400">Qty: <strong class="text-white">${item.quantity}</strong></span>
+                                <span class="text-emerald-400 font-semibold">$${book.price ? book.price.toFixed(2) : '0.00'}</span>
                             </div>
+                        </div>
+                        <div class="text-right flex-shrink-0">
+                            <p class="text-sm font-bold text-white mb-2">$${itemTotal.toFixed(2)}</p>
+                            <button onclick="removeFromCart('${item._id}')" class="text-xs text-rose-400 hover:text-rose-300 font-semibold hover:underline">
+                                Remove
+                            </button>
                         </div>
                     </div>
                 `;
                 cartList.innerHTML += itemCard;
             });
 
-            cartTotal.innerHTML = `<h4>Total: $${total.toFixed(2)}</h4><button class="btn btn-success" onclick="window.location.href='checkout.html'">Proceed to Checkout</button>`;
+            totalsArea.innerHTML = `
+                <div class="flex justify-between items-center text-sm">
+                    <span class="text-gray-400">Subtotal</span>
+                    <span class="text-white font-medium">$${total.toFixed(2)}</span>
+                </div>
+                <div class="flex justify-between items-center text-sm border-b border-gray-800 pb-4">
+                    <span class="text-gray-400">Digital Delivery</span>
+                    <span class="text-emerald-400 font-semibold">FREE</span>
+                </div>
+                <div class="flex justify-between items-center pt-2">
+                    <span class="text-base text-gray-300 font-bold">Total</span>
+                    <span class="text-xl text-amber-400 font-extrabold">$${total.toFixed(2)}</span>
+                </div>
+                <button onclick="window.location.href='checkout.html'" class="w-full mt-4 bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white py-3 rounded-xl font-bold text-sm tracking-wider shadow-lg shadow-emerald-950/30 transition duration-300">
+                    PROCEED TO CHECKOUT
+                </button>
+            `;
         }
 
         async function removeFromCart(itemId) {
@@ -94,7 +158,7 @@
                 });
                 const data = await response.json();
                 if (data.success) {
-                    fetchCart(); // Refresh cart
+                    fetchCart();
                 } else {
                     alert('Failed to remove item');
                 }
@@ -103,10 +167,7 @@
             }
         }
 
-        // Load cart when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            fetchCart();
-        });
+        document.addEventListener('DOMContentLoaded', fetchCart);
     </script>
 </body>
 </html>

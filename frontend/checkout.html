@@ -29,20 +29,26 @@
                 <label class="form-label">Payment Method</label>
                 <div>
                     <div class="form-check">
-                        <input class="form-check-input" type="radio" name="paymentMethod" id="upi" value="UPI" required>
+                        <input class="form-check-input" type="radio" name="paymentMethod" id="stripe" value="Stripe" checked required>
+                        <label class="form-check-label" for="stripe">
+                            Credit/Debit Card (Stripe Checkout)
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="paymentMethod" id="upi" value="UPI">
                         <label class="form-check-label" for="upi">
                             UPI
                         </label>
                     </div>
                     <div class="form-check">
-                        <input class="form-check-input" type="radio" name="paymentMethod" id="cod" value="Cash on Delivery" checked>
+                        <input class="form-check-input" type="radio" name="paymentMethod" id="cod" value="Cash on Delivery">
                         <label class="form-check-label" for="cod">
                             Cash on Delivery
                         </label>
                     </div>
                 </div>
             </div>
-            <button type="submit" class="btn btn-success">Place Order</button>
+            <button type="submit" class="btn btn-success">Proceed to Payment</button>
             <button type="button" onclick="window.location.href='cart.html'" class="btn btn-secondary ms-2">Back to Cart</button>
         </form>
     </div>
@@ -103,6 +109,35 @@
             const pincode = document.getElementById('pincode').value;
             const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
 
+            if (paymentMethod === 'Stripe') {
+                try {
+                    const response = await fetch(`${API_BASE}/purchases/create-checkout-session`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ name, address, pincode })
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        if (data.mock) {
+                            alert(data.message || 'Mock Checkout successful!');
+                            window.location.href = 'purchases.html';
+                        } else if (data.url) {
+                            window.location.href = data.url;
+                        }
+                    } else {
+                        alert('Payment setup failed: ' + data.message);
+                    }
+                } catch (error) {
+                    console.error('Error starting Stripe checkout:', error);
+                    alert('Error starting payment process');
+                }
+                return;
+            }
+
+            // UPI or COD Checkout
             try {
                 const response = await fetch(`${API_BASE}/purchases/checkout`, {
                     method: 'POST',

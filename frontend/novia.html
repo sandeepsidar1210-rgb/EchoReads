@@ -6,45 +6,113 @@
   <title>Novia AI - EchoReads</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body{background:radial-gradient(at 70% 30%, #0a0a1a,#0f172a);color:#e2e8f0;font-family:Inter,system-ui,sans-serif}
-    .glass{background:linear-gradient(180deg,rgba(30,41,59,.6),rgba(15,23,42,.6));backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.08)}
+    body {
+      background: radial-gradient(at 70% 30%, #111827, #030712);
+      color: #e5e7eb;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+    .glass {
+      background: rgba(17, 24, 39, 0.7);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .glow-border {
+      position: relative;
+    }
+    .glow-border::after {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      background: linear-gradient(90deg, #06b6d4, #10b981);
+      border-radius: inherit;
+      z-index: -1;
+      opacity: 0.3;
+    }
+    /* Scrollbar Styling */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(156, 163, 175, 0.2);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(156, 163, 175, 0.4);
+    }
   </style>
+  <script src="js/main.js"></script>
 </head>
-<body class="min-h-screen">
-  <header class="sticky top-0 z-40 bg-gradient-to-r from-cyan-700/20 to-emerald-700/20 border-b border-slate-800/60">
+<body class="min-h-screen flex flex-col">
+  <!-- Interactive Header -->
+  <header class="sticky top-0 z-40 bg-gray-900/80 backdrop-blur-md border-b border-gray-800/80">
     <div class="container mx-auto px-6 py-4 flex items-center justify-between">
       <div class="flex items-center space-x-4">
-        <button onclick="window.location.href='index.html'" class="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded">Back to Home Page</button>
-        <a href="index.html" class="text-2xl font-bold"><span class="text-amber-400">Echo</span><span class="text-white">Reads</span></a>
+        <button onclick="window.location.href='index.html'" class="bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 px-4 py-2 rounded-full text-sm font-medium transition">
+          ← Back to Home
+        </button>
+        <a href="index.html" class="text-2xl font-bold tracking-tight"><span class="text-emerald-400">Echo</span><span class="text-white">Reads</span></a>
       </div>
-      <nav class="space-x-6 text-gray-300">
-        <a class="hover:text-white" href="browse.html">Browse</a>
-        <a class="hover:text-white" href="genres.html">Genres</a>
-        <a class="text-cyan-400" href="novia.html">Novia</a>
+      <nav class="space-x-6 text-gray-400 font-medium">
+        <a class="hover:text-white transition" href="browse.html">Browse</a>
+        <a class="hover:text-white transition" href="genres.html">Genres</a>
+        <a class="text-emerald-400 font-semibold" href="novia.html">Novia AI</a>
       </nav>
     </div>
   </header>
-  <main class="container mx-auto px-6 py-10">
-    <div class="max-w-4xl mx-auto glass rounded-2xl p-6 shadow-2xl">
-      <div class="flex items-center gap-3 mb-4">
-        <div class="w-10 h-10 rounded-full bg-cyan-500 grid place-items-center">🤖</div>
-        <h1 class="text-3xl font-extrabold">Novia</h1>
-        <span class="ml-auto text-xs text-cyan-300">Online</span>
+
+  <!-- Main Chat Section -->
+  <main class="container mx-auto px-6 py-8 flex-1 flex flex-col justify-center max-w-4xl">
+    <div class="w-full glass rounded-3xl p-6 shadow-2xl flex flex-col flex-1 max-h-[80vh] glow-border">
+      
+      <!-- Top Title Bar -->
+      <div class="flex items-center gap-4 pb-4 border-b border-gray-850 border-gray-800/50 mb-4">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-500 to-emerald-400 grid place-items-center text-xl font-bold text-gray-900 shadow-lg shadow-emerald-500/20">
+          🤖
+        </div>
+        <div>
+          <h1 class="text-xl font-extrabold tracking-wide text-white">Novia AI</h1>
+          <p class="text-xs text-cyan-400 flex items-center gap-1">
+            <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span> EchoReads Smart Assistant
+          </p>
+        </div>
+        <span class="ml-auto text-xs px-3 py-1 rounded-full bg-cyan-950/60 border border-cyan-800/50 text-cyan-300 font-semibold">Online</span>
       </div>
-      <div class="mb-4 flex flex-wrap gap-2">
-        <button class="px-3 py-1 rounded-full bg-cyan-700/40 hover:bg-cyan-600/50" data-prompt="recommend fantasy">Recommend Fantasy</button>
-        <button class="px-3 py-1 rounded-full bg-cyan-700/40 hover:bg-cyan-600/50" data-prompt="recommend mystery">Recommend Mystery</button>
-        <button class="px-3 py-1 rounded-full bg-cyan-700/40 hover:bg-cyan-600/50" data-prompt="recommend science fiction">Recommend Sci‑Fi</button>
-        <button class="px-3 py-1 rounded-full bg-cyan-700/40 hover:bg-cyan-600/50" data-prompt="suggest a popular book">Popular Books</button>
+
+      <!-- Quick prompts -->
+      <div class="mb-4 flex flex-wrap gap-2 text-xs">
+        <button class="px-3 py-1.5 rounded-full bg-gray-800/60 border border-gray-700/50 text-gray-300 hover:border-emerald-400/50 hover:bg-emerald-950/20 transition" data-prompt="recommend a classic horror novel">Recommend Horror</button>
+        <button class="px-3 py-1.5 rounded-full bg-gray-800/60 border border-gray-700/50 text-gray-300 hover:border-emerald-400/50 hover:bg-emerald-950/20 transition" data-prompt="suggest a romance book with high rating">High-Rated Romance</button>
+        <button class="px-3 py-1.5 rounded-full bg-gray-800/60 border border-gray-700/50 text-gray-300 hover:border-emerald-400/50 hover:bg-emerald-950/20 transition" data-prompt="recommend science fiction books in your catalog">Suggest Sci-Fi</button>
+        <button class="px-3 py-1.5 rounded-full bg-gray-800/60 border border-gray-700/50 text-gray-300 hover:border-emerald-400/50 hover:bg-emerald-950/20 transition" data-prompt="give me a popular book suggestion">Popular Books</button>
       </div>
-      <div id="messages" class="h-96 overflow-y-auto space-y-3 p-2 bg-slate-900/30 rounded-xl"></div>
-      <div id="typing" class="hidden text-sm text-gray-400 mt-2">Novia is typing…</div>
+
+      <!-- Messages Area -->
+      <div id="messages" class="flex-1 overflow-y-auto space-y-4 p-4 bg-gray-950/40 rounded-2xl border border-gray-800/60 min-h-[300px]"></div>
+      
+      <!-- Typing indicator -->
+      <div id="typing" class="hidden text-xs text-gray-400 mt-2 ml-2 flex items-center gap-1.5">
+        <span class="flex space-x-1">
+          <span class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></span>
+          <span class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></span>
+          <span class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.3s"></span>
+        </span>
+        Novia is typing...
+      </div>
+
+      <!-- Input controls -->
       <div class="mt-4 flex gap-2">
-        <input id="input" class="flex-1 bg-gray-800 rounded px-4 py-3 text-white outline-none focus:ring-2 focus:ring-cyan-600" placeholder="Ask for recommendations or book info" />
-        <button id="send" class="px-5 py-3 bg-cyan-600 text-white rounded hover:bg-cyan-500">Send</button>
+        <input id="input" class="flex-1 bg-gray-800/60 border border-gray-700 text-sm rounded-xl px-4 py-3 text-white outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 transition" placeholder="Ask about plot summaries, recommendations, or genres..." />
+        <button id="send" class="px-6 py-3 bg-gradient-to-r from-cyan-600 to-emerald-600 font-semibold text-sm text-white rounded-xl hover:from-cyan-500 hover:to-emerald-500 transition shadow-lg shadow-emerald-950/40">Send</button>
       </div>
     </div>
   </main>
+
+  <!-- Container for the Book Details Modal -->
+  <div id="book-details-modal" class="relative z-50"></div>
+
   <script>
     const token = localStorage.getItem('echoreads_token');
     if (!token) {
@@ -55,19 +123,124 @@
     const input = document.getElementById('input');
     const sendBtn = document.getElementById('send');
     const typing = document.getElementById('typing');
-    function bubble(text,isUser=false){
-      const row=document.createElement('div'); row.className=`flex ${isUser?'justify-end':'justify-start'}`;
-      const b=document.createElement('div'); b.className=`${isUser?'bg-cyan-600 text-white':'bg-gray-800 text-gray-100'} rounded-2xl px-4 py-2 max-w-[75%] shadow`; b.textContent=text;
-      row.appendChild(b); messages.appendChild(row); messages.scrollTop=messages.scrollHeight;
+
+    // Creates chat speech bubble containing text
+    function bubble(text, isUser = false) {
+      const row = document.createElement('div');
+      row.className = `flex ${isUser ? 'justify-end' : 'justify-start'}`;
+
+      const cardContainer = document.createElement('div');
+      cardContainer.className = 'flex flex-col space-y-2 max-w-[80%]';
+
+      const bubbleBox = document.createElement('div');
+      bubbleBox.className = `${
+        isUser 
+          ? 'bg-gradient-to-tr from-cyan-600 to-emerald-600 text-white rounded-t-2xl rounded-bl-2xl' 
+          : 'bg-gray-800 text-gray-100 rounded-t-2xl rounded-br-2xl border border-gray-700/40'
+      } px-4 py-3 shadow-md text-sm leading-relaxed whitespace-pre-line`;
+      
+      // Parse markdown bold blocks (**text**) for a polished look
+      let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      
+      // 1. Parse book tags: [BookID: xxxxxxxx]
+      const { cleanText, bookIds } = parseBookTags(formattedText);
+      bubbleBox.innerHTML = cleanText;
+
+      cardContainer.appendChild(bubbleBox);
+      row.appendChild(cardContainer);
+      messages.appendChild(row);
+      messages.scrollTop = messages.scrollHeight;
+
+      // 2. Fetch and render rich details cards for any detected book IDs
+      if (!isUser && bookIds && bookIds.length > 0) {
+        bookIds.forEach(id => {
+          renderInlineBookCard(id, cardContainer);
+        });
+      }
     }
-    async function send(msg){
-      const text = (msg??input.value).trim(); if(!text) return; input.value=''; bubble(text,true); typing.classList.remove('hidden');
-      try{ const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({message:text})}); const data=await res.json(); typing.classList.add('hidden'); bubble(data.response||'No response.'); }
-      catch{ typing.classList.add('hidden'); bubble('Error contacting Novia.'); }
+
+    // Helper to extract [BookID: XXX] pattern from LLM response
+    function parseBookTags(text) {
+      const regex = /\[BookID:\s*([a-f\d]{24})\]/gi;
+      let bookIds = [];
+      let match;
+      while ((match = regex.exec(text)) !== null) {
+        bookIds.push(match[1]);
+      }
+      const cleanText = text.replace(regex, '');
+      return { cleanText, bookIds };
     }
-    sendBtn.onclick=()=>send(); input.addEventListener('keypress',e=>{ if(e.key==='Enter') send(); });
-    document.querySelectorAll('[data-prompt]').forEach(btn=>btn.onclick=()=>send(btn.dataset.prompt));
-    bubble("Hi! I'm Novia. Ask me for suggestions like 'recommend sci-fi'.");
+
+    // Fetch and render rich media inline book card inside chat stream
+    async function renderInlineBookCard(bookId, container) {
+      try {
+        const response = await fetch(`/api/books/${bookId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const json = await response.json();
+        if (json.success && json.data) {
+          const book = json.data;
+          const card = document.createElement('div');
+          card.className = 'flex items-center gap-3 p-3 bg-gray-900/60 border border-gray-700/60 hover:border-emerald-400/50 rounded-2xl max-w-sm transition duration-300';
+          card.innerHTML = `
+            <img src="${book.imageUrl}" class="w-10 h-14 object-cover rounded shadow-md flex-shrink-0" />
+            <div class="flex-1 min-w-0">
+              <h4 class="text-xs font-semibold text-white truncate">${book.title}</h4>
+              <p class="text-[10px] text-gray-400 truncate">by ${book.author}</p>
+              <div class="flex items-center gap-1.5 mt-1 text-[10px]">
+                <span class="text-amber-400">★</span>
+                <span class="text-gray-300">${book.rating}</span>
+                <span class="text-gray-500">•</span>
+                <span class="text-emerald-400 font-semibold">$${book.price.toFixed(2)}</span>
+              </div>
+            </div>
+            <button onclick="showBookDetails('${book._id}')" class="px-2.5 py-1.5 bg-gray-800 hover:bg-emerald-600 text-gray-300 hover:text-white rounded-lg text-[10px] font-semibold tracking-wider transition">
+              VIEW
+            </button>
+          `;
+          container.appendChild(card);
+          messages.scrollTop = messages.scrollHeight;
+        }
+      } catch (err) {
+        console.error('Failed to load inline book card for ID ' + bookId, err);
+      }
+    }
+
+    async function send(msg) {
+      const text = (msg ?? input.value).trim();
+      if (!text) return;
+      input.value = '';
+      bubble(text, true);
+      typing.classList.remove('hidden');
+
+      try {
+        const res = await fetch(API, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ message: text })
+        });
+        const data = await res.json();
+        typing.classList.add('hidden');
+        bubble(data.response || 'Sorry, I couldn\'t process that request.');
+      } catch {
+        typing.classList.add('hidden');
+        bubble('I encountered an error connecting to Novia. Please try again.');
+      }
+    }
+
+    sendBtn.onclick = () => send();
+    input.addEventListener('keypress', e => {
+      if (e.key === 'Enter') send();
+    });
+    document.querySelectorAll('[data-prompt]').forEach(btn => {
+      btn.onclick = () => send(btn.dataset.prompt);
+    });
+
+    bubble("Hi! I'm Novia. Ask me about plot summaries, character analyses, or requests like 'show me high rated romance books'. I will recommend titles straight from the EchoReads shelf!");
   </script>
 </body>
 </html>
+

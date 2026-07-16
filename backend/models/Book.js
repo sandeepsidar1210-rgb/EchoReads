@@ -1,4 +1,4 @@
-﻿const mongoose = require('mongoose');
+const mongoose = require('mongoose');
 
 const bookSchema = new mongoose.Schema({
   title: { type: String, required: true, trim: true },
@@ -21,21 +21,37 @@ const bookSchema = new mongoose.Schema({
   ]
 }, { timestamps: true });
 
-// Get all books with optional genre and sort
-bookSchema.statics.getAll = async function (genre = null, sort = 'latest') {
-  const query = genre ? { genre } : {};
+// Add Text Index for MongoDB Full-Text / Fuzzy Search
+bookSchema.index({ title: 'text', author: 'text', genre: 'text' });
+
+// Get all books with optional genre, sort, and search query
+bookSchema.statics.getAll = async function (genre = null, sort = 'latest', search = null) {
+  const query = {};
+  if (genre) query.genre = genre;
+
   let sortObj = { createdAt: -1 };
-  switch ((sort || 'latest').toLowerCase()) {
-    case 'popular':
-      sortObj = { totalRatings: -1, rating: -1, createdAt: -1 };
-      break;
-    case 'rated':
-    case 'highly-rated':
-      sortObj = { rating: -1, totalRatings: -1, createdAt: -1 };
-      break;
-    case 'latest':
-    default:
-      sortObj = { createdAt: -1 };
+
+  if (search) {
+    // If a search query is provided, perform a full-text search using MongoDB text indexing
+    query.$text = { $search: search };
+    sortObj = { score: { $meta: 'textScore' } };
+  } else {
+    switch ((sort || 'latest').toLowerCase()) {
+      case 'popular':
+        sortObj = { totalRatings: -1, rating: -1, createdAt: -1 };
+        break;
+      case 'rated':
+      case 'highly-rated':
+        sortObj = { rating: -1, totalRatings: -1, createdAt: -1 };
+        break;
+      case 'latest':
+      default:
+        sortObj = { createdAt: -1 };
+    }
+  }
+
+  if (search) {
+    return await this.find(query, { score: { $meta: 'textScore' } }).sort(sortObj);
   }
   return await this.find(query).sort(sortObj);
 };
@@ -57,3 +73,4 @@ bookSchema.methods.addRating = async function (ratingValue) {
 
 const Book = mongoose.model('Book', bookSchema);
 module.exports = Book;
+

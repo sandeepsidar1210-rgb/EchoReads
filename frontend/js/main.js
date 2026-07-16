@@ -101,7 +101,7 @@ async function showBookDetails(bookId) {
         const { data: book } = await getBookDetails(bookId);
         const modal = document.getElementById('book-details-modal');
         modal.innerHTML = `
-            <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+            <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
                 <div class="bg-gray-800 rounded-lg max-w-2xl w-full p-6 relative">
                     <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -125,12 +125,25 @@ async function showBookDetails(bookId) {
                             <span class="ml-2 text-gray-400">(${book.totalRatings} ratings)</span>
                         </div>
                     </div>
-                    <div class="mt-6 flex justify-between items-center">
+                    <div class="mt-6 flex justify-between items-center gap-3">
                         <span class="text-2xl font-bold text-accent-gold">$${book.price}</span>
-                        <a href="${book.purchaseUrl ? book.purchaseUrl : '#'}" target="_blank" rel="noopener"
-                           class="bg-accent-gold text-black py-2 px-6 rounded-lg hover:bg-yellow-500 transition duration-300 ${book.purchaseUrl ? '' : 'opacity-50 cursor-not-allowed pointer-events-none'}">
-                            Buy Now
-                        </a>
+                        <div class="flex gap-2">
+                            ${book.isPurchased ? `
+                                <a href="reader.html?bookId=${book._id || book.id}" 
+                                   class="bg-accent-teal hover:bg-teal-600 text-white font-semibold py-2 px-6 rounded-lg transition duration-300">
+                                    Read Book 📖
+                                </a>
+                            ` : `
+                                <button onclick="addBookToCart('${book._id || book.id}', '${book.title.replace(/'/g, "\\'")}')" 
+                                        class="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-300">
+                                    Add to Cart 🛒
+                                </button>
+                                <a href="${book.purchaseUrl ? book.purchaseUrl : '#'}" target="_blank" rel="noopener"
+                                   class="bg-accent-gold text-black font-semibold py-2 px-6 rounded-lg hover:bg-yellow-500 transition duration-300 ${book.purchaseUrl ? '' : 'opacity-50 cursor-not-allowed pointer-events-none'}">
+                                    Buy Now
+                                </a>
+                            `}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -145,6 +158,36 @@ function closeModal() {
     const modal = document.getElementById('book-details-modal');
     modal.style.display = 'none';
     modal.innerHTML = '';
+}
+
+async function addBookToCart(bookId, title) {
+    const token = localStorage.getItem('echoreads_token');
+    if (!token) {
+        alert('Please sign in first.');
+        window.location.href = 'signin.html';
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/cart', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ bookId, quantity: 1 })
+        });
+        const data = await response.json();
+        if (data.success) {
+            alert(`"${title}" added to shopping cart!`);
+            closeModal();
+        } else {
+            alert('Failed to add book to cart: ' + data.message);
+        }
+    } catch (error) {
+        console.error('Error adding to cart:', error);
+        alert('Error connecting to cart service.');
+    }
 }
 
 // Novia Chat UI

@@ -38,40 +38,98 @@
         window.location.href = 'signin.html';
     }
     const API='/api/purchases/mine';
-    function card(p){ const b=p.book||{}; return `
-      <div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg">
+    
+    function card(p){ 
+      const b=p.book||{}; 
+      return `
+      <div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg border border-gray-700/50 hover:border-cyan-500/30 transition duration-350">
         ${b.imageUrl ? `<img src="${b.imageUrl}" alt="${b.title||'Book cover'}" class="w-full h-40 object-cover" />` : ''}
-        <div class="p-4">
-          <h3 class="text-lg font-semibold text-white">${b.title||'Unknown Title'}</h3>
-          <p class="text-gray-400">${b.genre||''}</p>
-          <p class="text-gray-300 text-sm">Address: ${p.address || 'N/A'}</p>
-          <p class="text-gray-300 text-sm">Pincode: ${p.pincode || 'N/A'}</p>
-          <p class="text-gray-300 text-sm">Payment: ${p.paymentMethod || 'N/A'}</p>
-          <div class="mt-3 flex items-center justify-between">
-            <span class="text-amber-400 font-bold">$${(p.price||0).toFixed(2)}</span>
-            <span class="text-xs text-gray-500">${new Date(p.createdAt).toLocaleDateString()}</span>
+        <div class="p-4 flex flex-col justify-between h-[210px]">
+          <div>
+            <h3 class="text-base font-semibold text-white truncate">${b.title||'Unknown Title'}</h3>
+            <p class="text-xs text-gray-400 truncate mb-2">${b.genre||''}</p>
+            <div class="space-y-1 text-xs text-gray-400">
+              <p>Address: <span class="text-gray-300 font-medium">${p.address || 'N/A'}</span></p>
+              <p>Payment: <span class="text-gray-300 font-medium">${p.paymentMethod || 'N/A'}</span></p>
+            </div>
+          </div>
+          <div>
+            <div class="flex items-center justify-between text-xs border-t border-gray-700/60 pt-2 mb-3">
+              <span class="text-amber-400 font-extrabold text-sm">$${(p.price||0).toFixed(2)}</span>
+              <span class="text-gray-500">${new Date(p.createdAt).toLocaleDateString()}</span>
+            </div>
+            ${b._id ? `
+              <button onclick="openReader('${b._id}')" class="w-full bg-gradient-to-r from-cyan-600 to-emerald-600 hover:from-cyan-500 hover:to-emerald-500 text-white font-semibold py-2 px-3 rounded-lg text-xs tracking-wider transition">
+                READ BOOK 📖
+              </button>
+            ` : ''}
           </div>
         </div>
-      </div>`; }
+      </div>`; 
+    }
+    
     let ALL=[];
+
+    // Verify Stripe checkout sessions on redirect
+    async function verifyStripe() {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('stripe_success') === 'true' && params.get('session_id')) {
+        const sessionId = params.get('session_id');
+        const listEl = document.getElementById('list');
+        listEl.innerHTML = '<div class="col-span-full text-center text-cyan-400 font-bold p-10 animate-pulse text-lg">Verifying payment... unlocking your library...</div>';
+        
+        try {
+          const res = await fetch('/api/purchases/verify-stripe-checkout', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ sessionId })
+          });
+          const data = await res.json();
+          if (data.success) {
+            alert('Stripe payment verified successfully! Your book purchases are active.');
+          } else {
+            alert('Verification failed: ' + data.message);
+          }
+        } catch (err) {
+          console.error('Error verifying Stripe checkout:', err);
+          alert('Failed to complete Stripe verification.');
+        }
+        
+        // Remove query parameters from URL without page reload
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    }
+
     async function load(){
+      await verifyStripe();
       try {
-        const r=await fetch(API,{headers:{'Authorization':`Bearer ${token}`}}); const d=await r.json();
+        const r=await fetch(API,{headers:{'Authorization':`Bearer ${token}`}}); 
+        const d=await r.json();
         ALL=(d.data||[]);
         render(ALL);
       } catch (err) {
         console.error(err);
       }
     }
+
     function render(items){
       const el=document.getElementById('list');
       el.innerHTML=items.map(card).join('');
       document.getElementById('empty').classList.toggle('hidden', !!items.length);
     }
+
     function search(){
       const q=document.getElementById('q').value.toLowerCase();
       render(ALL.filter(p=> ((p.book?.title||'') + (p.book?.genre||'')).toLowerCase().includes(q)));
     }
+
+    function openReader(bookId) {
+      window.location.href = `reader.html?bookId=${bookId}`;
+    }
+
     document.getElementById('go').onclick=search;
     document.getElementById('q').addEventListener('keypress',e=>{ if(e.key==='Enter') search(); });
     document.getElementById('signout').onclick=()=>{ 
@@ -79,6 +137,7 @@
       localStorage.removeItem('echoreads_user');
       window.location.href='index.html';
     };
+    
     load();
   </script>
 </body>

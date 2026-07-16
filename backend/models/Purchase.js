@@ -9,7 +9,12 @@ const purchaseSchema = new mongoose.Schema(
     price: { type: Number, required: true, min: 0 },
     address: { type: String },
     pincode: { type: String },
-    paymentMethod: { type: String, enum: ['UPI', 'Cash on Delivery'], default: 'Cash on Delivery' },
+    paymentMethod: { 
+      type: String, 
+      enum: ['UPI', 'Cash on Delivery', 'Stripe Credit/Debit Card', 'Mock Stripe Payment'], 
+      default: 'Cash on Delivery' 
+    },
+    transactionId: { type: String }
   },
   { 
     timestamps: true,
@@ -18,6 +23,7 @@ const purchaseSchema = new mongoose.Schema(
         ret.address = ret.address || '';
         ret.pincode = ret.pincode || '';
         ret.paymentMethod = ret.paymentMethod || 'Cash on Delivery';
+        ret.transactionId = ret.transactionId || '';
         return ret;
       }
     }
