@@ -1,171 +1,392 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Checkout - EchoReads</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Checkout — EchoReads</title>
+  <meta name="description" content="Securely complete your book purchase on EchoReads." />
+  <link rel="stylesheet" href="css/shared.css" />
+  <script src="js/shared.js" defer></script>
+  <style>
+    /* ── Checkout premium styling ─────────────── */
+    .checkout-grid {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 32px;
+      align-items: start;
+    }
+    @media (max-width: 768px) {
+      .checkout-grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+    }
+    .checkout-card {
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl);
+      padding: 32px;
+      backdrop-filter: blur(16px);
+    }
+    .checkout-form-group {
+      margin-bottom: 20px;
+    }
+    .checkout-form-group label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-text-muted);
+      margin-bottom: 8px;
+    }
+    .checkout-input {
+      width: 100%;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      color: #fff;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color var(--transition-fast);
+      font-family: 'Inter', sans-serif;
+    }
+    .checkout-input:focus {
+      border-color: var(--color-teal);
+    }
+    .payment-option-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+    .payment-option-card:hover {
+      border-color: var(--color-border-hover);
+      background: rgba(255,255,255,0.04);
+    }
+    .payment-option-card input[type="radio"] {
+      accent-color: var(--color-teal);
+      width: 18px;
+      height: 18px;
+    }
+    .payment-option-card.active {
+      border-color: var(--color-teal);
+      background: rgba(34,211,238,0.05);
+    }
+
+    /* UPI Modal Box */
+    .upi-modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .upi-modal-box {
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-2xl);
+      max-width: 440px;
+      width: 100%;
+      padding: 32px;
+      text-align: center;
+      box-shadow: var(--shadow-xl);
+      backdrop-filter: blur(24px);
+    }
+  </style>
 </head>
 <body>
-    <div class="container mt-5">
-        <h1 class="mb-4">Checkout</h1>
-        <div id="cart-summary" class="mb-4">
-            <!-- Cart items summary will be loaded here -->
-        </div>
-        <form id="checkout-form">
-            <div class="mb-3">
-                <label for="name" class="form-label">Full Name</label>
-                <input type="text" class="form-control" id="name" required>
-            </div>
-            <div class="mb-3">
-                <label for="address" class="form-label">Address</label>
-                <textarea class="form-control" id="address" rows="3" required></textarea>
-            </div>
-            <div class="mb-3">
-                <label for="pincode" class="form-label">Pincode</label>
-                <input type="text" class="form-control" id="pincode" required>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Payment Method</label>
-                <div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="paymentMethod" id="stripe" value="Stripe" checked required>
-                        <label class="form-check-label" for="stripe">
-                            Credit/Debit Card (Stripe Checkout)
-                        </label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="paymentMethod" id="upi" value="UPI">
-                        <label class="form-check-label" for="upi">
-                            UPI
-                        </label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="paymentMethod" id="cod" value="Cash on Delivery">
-                        <label class="form-check-label" for="cod">
-                            Cash on Delivery
-                        </label>
-                    </div>
-                </div>
-            </div>
-            <button type="submit" class="btn btn-success">Proceed to Payment</button>
-            <button type="button" onclick="window.location.href='cart.html'" class="btn btn-secondary ms-2">Back to Cart</button>
-        </form>
+<div class="er-page">
+
+  <main class="er-container" style="padding-top:40px; padding-bottom:80px; flex:1;">
+    <div style="margin-bottom: 32px;">
+      <h1 style="font-family:'Space Grotesk',sans-serif;font-size:2.2rem;font-weight:900;margin-bottom:6px;">Checkout</h1>
+      <p style="color:var(--color-text-secondary);font-size:.9rem;">Complete your secure transaction details below.</p>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        const token = localStorage.getItem('echoreads_token');
-        if (!token) {
-            window.location.href = 'signin.html';
-        }
-        const API_BASE = '/api';
+    <div class="checkout-grid">
+      <!-- Left checkout form -->
+      <div class="checkout-card">
+        <form id="checkout-form">
+          <div class="checkout-form-group">
+            <label for="name">Full Name</label>
+            <input type="text" id="name" class="checkout-input" placeholder="John Doe" required />
+          </div>
 
-        async function loadCartSummary() {
-            try {
-                const response = await fetch(`${API_BASE}/cart/mine`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await response.json();
-                if (data.success) {
-                    displayCartSummary(data.data);
-                } else {
-                    alert('Failed to load cart');
-                    window.location.href = 'cart.html';
-                }
-            } catch (error) {
-                console.error('Error loading cart:', error);
-            }
-        }
+          <div class="checkout-form-group">
+            <label for="address">Delivery Address</label>
+            <textarea id="address" class="checkout-input" rows="3" placeholder="Street Address, City, State" required></textarea>
+          </div>
 
-        function displayCartSummary(items) {
-            const summary = document.getElementById('cart-summary');
-            if (items.length === 0) {
-                summary.innerHTML = '<p>Your cart is empty. <a href="browse.html">Browse books</a></p>';
-                document.getElementById('checkout-form').style.display = 'none';
-                return;
-            }
+          <div class="checkout-form-group" style="margin-bottom: 32px;">
+            <label for="pincode">Pincode / Zip Code</label>
+            <input type="text" id="pincode" class="checkout-input" placeholder="e.g. 492001" required />
+          </div>
 
-            let total = 0;
-            let html = '<h3>Order Summary</h3><ul class="list-group mb-3">';
-            items.forEach(item => {
-                const bookPrice = item.book ? item.book.price : 0;
-                const bookTitle = item.book ? item.book.title : 'Unknown Book';
-                const subtotal = bookPrice * item.quantity;
-                total += subtotal;
-                html += `<li class="list-group-item d-flex justify-content-between align-items-center">
-                    ${bookTitle} (x${item.quantity})
-                    <span>$${subtotal.toFixed(2)}</span>
-                </li>`;
-            });
-            html += `</ul><h4>Total: $${total.toFixed(2)}</h4>`;
-            summary.innerHTML = html;
-        }
+          <h3 style="font-size:1rem;font-weight:700;margin-bottom:16px;">Select Payment Method</h3>
+          
+          <div class="payment-option-card active" onclick="selectPaymentRadio('stripe')">
+            <input type="radio" name="paymentMethod" id="stripe" value="Stripe" checked required />
+            <div style="flex:1;">
+              <h4 style="font-size:0.9rem;font-weight:700;margin-bottom:2px;">Credit / Debit Card</h4>
+              <p style="font-size:0.75rem;color:var(--color-text-secondary);">Secure instant digital fulfillment via Stripe</p>
+            </div>
+            <span style="font-size:1.5rem;">💳</span>
+          </div>
 
-        document.getElementById('checkout-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const name = document.getElementById('name').value;
-            const address = document.getElementById('address').value;
-            const pincode = document.getElementById('pincode').value;
-            const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+          <div class="payment-option-card" onclick="selectPaymentRadio('upi')">
+            <input type="radio" name="paymentMethod" id="upi" value="UPI" />
+            <div style="flex:1;">
+              <h4 style="font-size:0.9rem;font-weight:700;margin-bottom:2px;">UPI Payment (QR Code)</h4>
+              <p style="font-size:0.75rem;color:var(--color-text-secondary);">Pay instantly using GPay, PhonePe, Paytm, or BHIM</p>
+            </div>
+            <span style="font-size:1.5rem;">📱</span>
+          </div>
 
-            if (paymentMethod === 'Stripe') {
-                try {
-                    const response = await fetch(`${API_BASE}/purchases/create-checkout-session`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}`
-                        },
-                        body: JSON.stringify({ name, address, pincode })
-                    });
-                    const data = await response.json();
-                    if (data.success) {
-                        if (data.mock) {
-                            alert(data.message || 'Mock Checkout successful!');
-                            window.location.href = 'purchases.html';
-                        } else if (data.url) {
-                            window.location.href = data.url;
-                        }
-                    } else {
-                        alert('Payment setup failed: ' + data.message);
-                    }
-                } catch (error) {
-                    console.error('Error starting Stripe checkout:', error);
-                    alert('Error starting payment process');
-                }
-                return;
-            }
+          <div class="payment-option-card" onclick="selectPaymentRadio('cod')">
+            <input type="radio" name="paymentMethod" id="cod" value="Cash on Delivery" />
+            <div style="flex:1;">
+              <h4 style="font-size:0.9rem;font-weight:700;margin-bottom:2px;">Cash on Delivery (COD)</h4>
+              <p style="font-size:0.75rem;color:var(--color-text-secondary);">Pay upon physical receipt (Standard processing)</p>
+            </div>
+            <span style="font-size:1.5rem;">💵</span>
+          </div>
 
-            // UPI or COD Checkout
-            try {
-                const response = await fetch(`${API_BASE}/purchases/checkout`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        name,
-                        address,
-                        pincode,
-                        paymentMethod
-                    })
-                });
-                const data = await response.json();
-                if (data.success) {
-                    alert('Order placed successfully!');
-                    window.location.href = 'purchases.html';
-                } else {
-                    alert('Failed to place order: ' + data.message);
-                }
-            } catch (error) {
-                console.error('Error placing order:', error);
-                alert('Error placing order');
-            }
+          <div style="display:flex;gap:12px;margin-top:32px;">
+            <button type="submit" class="er-btn er-btn-primary" style="flex:1;justify-content:center;padding:14px;">Proceed to Payment</button>
+            <button type="button" onclick="window.location.href='cart.html'" class="er-btn er-btn-outline">Back</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Right order summary sticky panel -->
+      <div class="checkout-card" style="position:sticky;top:calc(var(--nav-height) + 16px);">
+        <h3 style="font-size:1rem;font-weight:700;padding-bottom:16px;border-bottom:1px solid var(--color-border);margin-bottom:20px;">Order Summary</h3>
+        <div id="cart-summary-list" style="display:flex;flex-direction:column;gap:16px;margin-bottom:20px;">
+          <!-- Items will be dynamically loaded here -->
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- UPI QR Code Payment Modal Overlay (Hidden initially) -->
+  <div id="upi-payment-modal" class="upi-modal-overlay" style="display:none;">
+    <div class="upi-modal-box">
+      <h3 style="font-family:'Space Grotesk',sans-serif;font-size:1.4rem;font-weight:800;margin-bottom:12px;color:var(--color-teal);">UPI Secure Checkout</h3>
+      <p style="font-size:0.8rem;color:var(--color-text-secondary);margin-bottom:20px;">Scan the QR code below using any UPI app (GPay, PhonePe, Paytm, or BHIM) to pay.</p>
+      
+      <!-- QR Image Wrapper -->
+      <div style="background:#fff;padding:16px;border-radius:var(--radius-xl);display:inline-block;margin-bottom:20px;box-shadow:0 10px 25px rgba(0,0,0,0.4);">
+        <img id="upi-qr-image" src="" alt="Payment QR Code" style="width:200px;height:200px;display:block;" />
+      </div>
+
+      <div style="background:rgba(255,255,255,0.02);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:14px;margin-bottom:24px;text-align:left;font-size:0.82rem;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+          <span style="color:var(--color-text-secondary);">Payee Name:</span>
+          <span style="font-weight:700;">EchoReads Store</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+          <span style="color:var(--color-text-secondary);">UPI ID / VPA:</span>
+          <span style="font-weight:700;">sandeepsidar1210@okaxis</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;border-top:1px solid var(--color-border);padding-top:6px;margin-top:6px;font-size:0.9rem;">
+          <span style="font-weight:700;">Total Amount:</span>
+          <span style="font-weight:900;color:var(--color-gold);" id="upi-amount-inr">₹0.00</span>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:12px;">
+        <button id="btn-upi-paid" class="er-btn er-btn-primary" style="flex:1;justify-content:center;">I Have Paid</button>
+        <button id="btn-upi-cancel" class="er-btn er-btn-outline" style="flex:1;justify-content:center;">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const token = localStorage.getItem('echoreads_token');
+  if (!token) {
+    window.location.href = 'signin.html';
+  }
+  const API_BASE = '/api';
+  let cartTotalUSD = 0;
+
+  function selectPaymentRadio(id) {
+    document.querySelectorAll('.payment-option-card').forEach(el => el.classList.remove('active'));
+    const input = document.getElementById(id);
+    if (input) {
+      input.checked = true;
+      input.parentElement.classList.add('active');
+    }
+  }
+
+  async function loadCartSummary() {
+    try {
+      const response = await fetch(`${API_BASE}/cart/mine`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await response.json();
+      if (data.success) {
+        displayCartSummary(data.data);
+      } else {
+        window.showToast('Failed to load cart', true);
+        window.location.href = 'cart.html';
+      }
+    } catch (error) {
+      console.error('Error loading cart:', error);
+    }
+  }
+
+  function displayCartSummary(items) {
+    const summary = document.getElementById('cart-summary-list');
+    if (!items || items.length === 0) {
+      summary.innerHTML = '<p style="font-size:.85rem;color:var(--color-text-secondary);">Your cart is empty. <a href="browse.html" style="color:var(--color-teal);">Browse books</a></p>';
+      document.getElementById('checkout-form').style.display = 'none';
+      return;
+    }
+
+    let total = 0;
+    let html = '';
+    
+    items.forEach(item => {
+      const bookPrice = item.book ? item.book.price : 0;
+      const bookTitle = item.book ? item.book.title : 'Unknown Book';
+      const subtotal = bookPrice * item.quantity;
+      total += subtotal;
+      
+      html += `
+        <div style="display:flex;justify-content:space-between;align-items:start;font-size:0.85rem;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.03);">
+          <div style="max-width:200px;min-width:0;">
+            <h4 style="font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px;">${bookTitle}</h4>
+            <p style="font-size:0.75rem;color:var(--color-text-secondary);">Qty: ${item.quantity}</p>
+          </div>
+          <span style="font-weight:800;color:var(--color-gold);">$${subtotal.toFixed(2)}</span>
+        </div>
+      `;
+    });
+
+    cartTotalUSD = total;
+
+    html += `
+      <div style="display:flex;justify-content:space-between;font-size:.85rem;margin-top:12px;">
+        <span style="color:var(--color-text-secondary);">Digital Delivery</span>
+        <span style="color:var(--color-emerald);font-weight:700;">FREE</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:1.1rem;font-weight:800;padding-top:16px;border-top:1px solid var(--color-border);margin-top:8px;">
+        <span>Total Due</span>
+        <span style="color:var(--color-gold); font-size: 1.3rem;">$${total.toFixed(2)}</span>
+      </div>
+    `;
+    summary.innerHTML = html;
+  }
+
+  // Handle Payment Form submission
+  document.getElementById('checkout-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('name').value;
+    const address = document.getElementById('address').value;
+    const pincode = document.getElementById('pincode').value;
+    const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+
+    if (paymentMethod === 'Stripe') {
+      try {
+        const response = await fetch(`${API_BASE}/purchases/create-checkout-session`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ name, address, pincode })
         });
+        const data = await response.json();
+        if (data.success) {
+          if (data.mock) {
+            window.showToast(data.message || 'Mock Checkout successful!');
+            setTimeout(() => { window.location.href = 'purchases.html'; }, 1000);
+          } else if (data.url) {
+            window.location.href = data.url;
+          }
+        } else {
+          window.showToast('Payment setup failed: ' + data.message, true);
+        }
+      } catch (error) {
+        console.error('Error starting Stripe checkout:', error);
+        window.showToast('Error starting payment process', true);
+      }
+      return;
+    }
 
-        loadCartSummary();
-    </script>
+    if (paymentMethod === 'UPI') {
+      // Show UPI QR payment modal overlay
+      const inrAmount = (cartTotalUSD * 83).toFixed(2); // Convert USD to INR (e.g. rate 1 USD = 83 INR)
+      const payeeVpa = 'sandeepsidar1210@okaxis';
+      const payeeName = 'EchoReads Store';
+      const note = 'EchoReads Book Purchase';
+      
+      const upiUri = `upi://pay?pa=${payeeVpa}&pn=${encodeURIComponent(payeeName)}&am=${inrAmount}&cu=INR&tn=${encodeURIComponent(note)}`;
+      
+      // QR server API to generate code
+      document.getElementById('upi-qr-image').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiUri)}`;
+      document.getElementById('upi-amount-inr').textContent = `₹${inrAmount} ($${cartTotalUSD.toFixed(2)} USD)`;
+      
+      document.getElementById('upi-payment-modal').style.display = 'flex';
+      return;
+    }
+
+    // Cash on Delivery Checkout Flow
+    await placeOrder(name, address, pincode, paymentMethod);
+  });
+
+  // Action bindings inside UPI Modal
+  document.getElementById('btn-upi-cancel').addEventListener('click', () => {
+    document.getElementById('upi-payment-modal').style.display = 'none';
+  });
+
+  document.getElementById('btn-upi-paid').addEventListener('click', async () => {
+    document.getElementById('upi-payment-modal').style.display = 'none';
+    const name = document.getElementById('name').value;
+    const address = document.getElementById('address').value;
+    const pincode = document.getElementById('pincode').value;
+    
+    // Complete the transaction with payment method "UPI"
+    await placeOrder(name, address, pincode, 'UPI');
+  });
+
+  async function placeOrder(name, address, pincode, paymentMethod) {
+    try {
+      const response = await fetch(`${API_BASE}/purchases/checkout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ name, address, pincode, paymentMethod })
+      });
+      const data = await response.json();
+      if (data.success) {
+        window.showToast('✓ Order placed successfully!');
+        setTimeout(() => { window.location.href = 'purchases.html'; }, 1000);
+      } else {
+        window.showToast('Failed to place order: ' + data.message, true);
+      }
+    } catch (error) {
+      console.error('Error placing order:', error);
+      window.showToast('Error placing order', true);
+    }
+  }
+
+  loadCartSummary();
+</script>
 </body>
 </html>
