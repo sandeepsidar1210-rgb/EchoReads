@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Book Summary — EchoReads</title>
+  <meta name="description" content="Read detailed summaries and previews of your favorite books on EchoReads." />
+  <link rel="stylesheet" href="css/shared.css" />
+  <script src="js/shared.js" defer></script>
+  <style>
+    /* ── Summary-specific premium styles ─────────────── */
+    .summary-card {
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-2xl);
+      padding: 40px;
+      margin-top: 40px;
+      backdrop-filter: blur(20px);
+      box-shadow: var(--shadow-xl);
+    }
+    .summary-grid {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 40px;
+    }
+    @media (max-width: 768px) {
+      .summary-grid {
+        grid-template-columns: 1fr;
+        gap: 30px;
+      }
+      .summary-card {
+        padding: 24px;
+      }
+    }
+    .cover-wrapper img {
+      width: 100%;
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-lg);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .excerpt-container {
+      font-size: 0.95rem;
+      color: var(--color-text-secondary);
+      line-height: 1.8;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      white-space: pre-wrap;
+      font-family: 'Inter', sans-serif;
+      margin-top: 20px;
+      max-height: 480px;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body>
+<div class="er-page">
+
+  <div class="er-container" style="padding-top: 20px; padding-bottom: 80px;">
+    <!-- Back navigation -->
+    <a href="javascript:history.back()" style="display: inline-flex; align-items: center; gap: 8px; color: var(--color-teal); text-decoration: none; font-size: 0.9rem; font-weight: 600; margin-bottom: 20px; transition: color var(--transition-fast);">
+      <span>←</span> Back to Browse
+    </a>
+
+    <!-- Skeleton Loader -->
+    <div id="summary-skeleton" class="summary-card">
+      <div class="summary-grid">
+        <div class="er-skeleton" style="height: 400px; border-radius: var(--radius-xl);"></div>
+        <div>
+          <div class="er-skeleton" style="height: 32px; width: 150px; margin-bottom: 16px;"></div>
+          <div class="er-skeleton" style="height: 48px; width: 350px; margin-bottom: 12px;"></div>
+          <div class="er-skeleton" style="height: 20px; width: 200px; margin-bottom: 30px;"></div>
+          <div class="er-skeleton" style="height: 120px; width: 100%; margin-bottom: 24px;"></div>
+          <div class="er-skeleton" style="height: 200px; width: 100%;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Panel (initially hidden) -->
+    <div id="summary-content" class="summary-card er-reveal" style="display: none;">
+      <div class="summary-grid">
+        <!-- Left details panel -->
+        <div>
+          <div class="cover-wrapper" style="margin-bottom: 24px;">
+            <img id="book-cover" src="" alt="Book Cover" />
+          </div>
+          
+          <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 24px; text-align: center;">
+            <div style="font-size: 2.2rem; font-weight: 900; color: var(--color-gold); margin-bottom: 4px;" id="book-price">$0.00</div>
+            <div style="font-size: 0.82rem; color: var(--color-text-secondary); margin-bottom: 16px;" id="book-ratings">⭐ 0.0 (0 ratings)</div>
+            
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              <button id="btn-buy" class="er-btn er-btn-primary" style="justify-content: center; width: 100%;">Buy Now</button>
+              <button id="btn-cart" class="er-btn er-btn-outline" style="justify-content: center; width: 100%;">Add to Cart</button>
+              <a id="btn-pdf" href="#" target="_blank" class="er-btn er-btn-outline" style="border-color: var(--color-emerald); color: var(--color-emerald); justify-content: center; width: 100%;">Download PDF (Free)</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right detailed summary panel -->
+        <div>
+          <span class="er-badge er-badge-teal" id="book-genre" style="margin-bottom: 12px; display: inline-flex;">Genre</span>
+          <h1 id="book-title" style="font-family: 'Space Grotesk', sans-serif; font-size: clamp(2rem, 3.5vw, 2.8rem); font-weight: 900; margin-bottom: 8px; letter-spacing: -0.5px;">Book Title</h1>
+          <p id="book-author" style="font-size: 1.1rem; color: var(--color-text-secondary); margin-bottom: 24px;">by <strong style="color: var(--color-text-primary);">Author Name</strong></p>
+
+          <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 10px; color: var(--color-text-primary);">Book Overview</h3>
+          <p id="book-short-summary" style="font-size: 0.95rem; color: var(--color-text-secondary); line-height: 1.75; margin-bottom: 32px;">Short summary text goes here...</p>
+
+          <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--color-text-primary); display: flex; align-items: center; gap: 8px;">
+            <span>📖</span> Detailed Summary & Preview
+          </h3>
+          <div id="book-excerpt" class="excerpt-container">Detailed book content...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', async () => {
+    const params = new URLSearchParams(window.location.search);
+    const bookId = params.get('id');
+    if (!bookId) {
+      window.location.href = 'browse.html';
+      return;
+    }
+
+    const token = localStorage.getItem('echoreads_token');
+    try {
+      const res = await fetch(`/api/books/${bookId}`, {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error('Failed to load book data');
+      
+      const book = data.data;
+
+      // Populate cover, details and badges
+      document.getElementById('book-cover').src = book.imageUrl || 'https://placehold.co/300x400/0d0d1f/fff?text=Book';
+      document.getElementById('book-cover').alt = book.title;
+      document.getElementById('book-price').textContent = `$${book.price.toFixed(2)}`;
+      document.getElementById('book-ratings').textContent = `⭐ ${book.rating} (${book.totalRatings} ratings)`;
+      document.getElementById('book-genre').textContent = book.genre || 'General';
+      document.getElementById('book-title').textContent = book.title;
+      document.getElementById('book-author').querySelector('strong').textContent = book.author;
+      document.getElementById('book-short-summary').textContent = book.summary || book.description || 'No summary available.';
+      document.getElementById('book-excerpt').textContent = book.content || 'Detailed preview content not loaded.';
+
+      // PDF Download Link
+      let pdfLink = '';
+      if (book.purchaseUrl && book.purchaseUrl.includes('gutenberg.org/ebooks/')) {
+        const gutenbergId = book.purchaseUrl.split('/').pop().trim();
+        pdfLink = gutenbergId ? `https://www.gutenberg.org/ebooks/${gutenbergId}` : `https://archive.org/search.php?query=${encodeURIComponent(book.title + ' ' + book.author)}+AND+mediatype:texts`;
+      } else {
+        pdfLink = `https://archive.org/search.php?query=${encodeURIComponent(book.title + ' ' + book.author)}+AND+mediatype:texts`;
+      }
+      document.getElementById('btn-pdf').href = pdfLink;
+
+      // Bind button events to shared functions
+      document.getElementById('btn-cart').onclick = () => {
+        window.addBookToCart(book._id, book.title);
+      };
+      
+      document.getElementById('btn-buy').onclick = () => {
+        window.openPurchase(book._id, book.title.replace(/'/g, "\\'"), book.price);
+      };
+
+      // Toggle UI visibility
+      document.getElementById('summary-skeleton').style.display = 'none';
+      const content = document.getElementById('summary-content');
+      content.style.display = 'block';
+      setTimeout(() => content.classList.add('visible'), 50);
+
+    } catch (err) {
+      console.error(err);
+      window.showToast('Error loading book summary details', true);
+      setTimeout(() => { window.location.href = 'browse.html'; }, 2000);
+    }
+  });
+</script>
+</body>
+</html>

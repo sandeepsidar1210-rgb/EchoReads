@@ -301,15 +301,10 @@
                 </div>
                 <h4 style="font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-muted);margin-bottom:8px;">Summary</h4>
                 <p style="font-size:.875rem;color:var(--color-text-secondary);line-height:1.75;margin-bottom:20px;">${book.summary || book.description || 'No summary available.'}</p>
-                
-                ${book.content ? `
-                  <h4 style="font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-muted);margin-bottom:8px;">Detailed Summary / Preview</h4>
-                  <div style="font-size:.85rem;color:var(--color-text-secondary);line-height:1.7;background:rgba(255,255,255,0.02);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:14px;max-height:180px;overflow-y:auto;white-space:pre-wrap;margin-bottom:24px;font-family:'Inter',sans-serif;">${book.content}</div>
-                ` : ''}
-
                 <div style="display:flex;align-items:center;justify-content:space-between;padding-top:20px;border-top:1px solid var(--color-border);flex-wrap:wrap;gap:16px;">
                   <span style="font-size:2rem;font-weight:900;color:var(--color-gold);">$${book.price.toFixed(2)}</span>
                   <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                    <a href="summary.html?id=${book._id}" class="er-btn er-btn-outline" style="border-color:var(--color-teal);color:var(--color-teal);">Read Summary</a>
                     <a href="${pdfLink}" target="_blank" class="er-btn er-btn-outline" style="border-color:var(--color-emerald);color:var(--color-emerald);">Download PDF (Free)</a>
                     <button onclick="window.addBookToCart('${book._id}', '${book.title.replace(/'/g,"\\'")}'); window.closeBookDetails();" class="er-btn er-btn-outline">Add to Cart</button>
                     <button onclick="window.openPurchase('${book._id}','${book.title.replace(/'/g,"\\'")}',${book.price}); window.closeBookDetails();" class="er-btn er-btn-primary">Buy Now</button>
