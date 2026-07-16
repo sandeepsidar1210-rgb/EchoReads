@@ -263,21 +263,28 @@
       // 1. Remove bracketed illustration tags: [Illustration], [Illustration: ...]
       cleaned = cleaned.replace(/\[illustration\b[^\]]*\]/gi, '');
       
-      // 2. Remove isolated lines like "ILLUSTRATIONS" or "ILLUSTRATION"
+      // 2. Remove table of contents lists and other boilerplate indexes
       cleaned = cleaned.split('\n').filter(line => {
         const trimmed = line.trim();
-        if (/^(illustrations|list of illustrations)$/i.test(trimmed)) return false;
-        // Filter out table of contents listings (e.g., "CHAPTER I On the Arizona Hills...")
-        if (trimmed.includes('CHAPTER I') && trimmed.includes('CHAPTER II') && trimmed.includes('CHAPTER III')) return false;
+        if (/^(illustrations|list of illustrations|contents|table of contents)$/i.test(trimmed)) return false;
+        
+        // Count occurrences of "CHAPTER" or "Chapter" in the line.
+        // If there are 2 or more chapter mentions, it's a Table of Contents line!
+        const chapterCount = (trimmed.match(/\bchapter\b/gi) || []).length;
+        if (chapterCount >= 2) return false;
+        
         return true;
       }).join('\n');
 
       // 3. Find the actual start of the text (e.g., FOREWORD, PROLOGUE, CHAPTER I, or first heading)
+      // We look for standalone chapter headers that are on their own lines (not inside a paragraph)
       const startKeywords = [
         /\n\s*(CHAPTER\s+[IVXLCDM\d]+)\b/i,
+        /\n\s*(CHAPTER\s+\d+)\b/i,
         /\n\s*(FOREWORD)\b/i,
         /\n\s*(PROLOGUE)\b/i,
-        /\n\s*(INTRODUCTION)\b/i
+        /\n\s*(INTRODUCTION)\b/i,
+        /\n\s*(I\.\s+[A-Z\s]+)\b/ // Roman numeral header like "I. THE RIVER BANK"
       ];
       
       let earliestIdx = -1;
@@ -325,14 +332,24 @@
         if (!trimmed) return '';
         
         // Match chapter titles or major headings
-        const isHeader = /^(chapter\s+[ivxlcdm\d]+|foreword|prologue|introduction|illustrations|contents)$/i.test(trimmed);
+        const isHeader = trimmed.length < 100 && (
+          /^(chapter|foreword|prologue|introduction|illustrations|contents)/i.test(trimmed) ||
+          /^[IVXLCDM\d]+\.\s+/i.test(trimmed) ||
+          /^\d+\.\s+/i.test(trimmed) ||
+          trimmed === trimmed.toUpperCase()
+        );
         
         // Split using sentence ending boundaries
         const rawSentences = trimmed.match(/[^.!?]+[.!?]*\s*/g) || [trimmed];
         const spanSentences = rawSentences.map(s => {
           if (!s.trim()) return '';
           sentenceIndex++;
-          sentences.push(s.trim());
+          
+          sentences.push({
+            text: s.trim(),
+            isHeader: isHeader
+          });
+          
           return `<span id="s-${sentenceIndex}" onclick="jumpToSentence(${sentenceIndex})" class="reader-sentence cursor-pointer hover:bg-emerald-500/10 transition duration-150">${s}</span>`;
         }).join('');
         
@@ -387,6 +404,18 @@
         return;
       }
 
+      const sentenceData = sentencesList[index - 1];
+      if (!sentenceData) {
+        stopSpeech();
+        return;
+      }
+
+      // Skip narrating header sentences automatically
+      if (sentenceData.isHeader) {
+        speakSentence(index + 1);
+        return;
+      }
+
       currentSentenceIndex = index;
       updateProgressText();
       localStorage.setItem(`bookmark_${bookId}`, index);
@@ -403,7 +432,7 @@
         span.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
 
-      const text = sentencesList[index - 1];
+      const text = sentenceData.text;
       const utterance = new SpeechSynthesisUtterance(text);
 
       const voiceName = document.getElementById('voice-select').value;
