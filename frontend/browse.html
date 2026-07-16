@@ -64,32 +64,6 @@
     }
     .browse-book-card:hover img { transform: scale(1.04); }
     .browse-book-card-body { padding: 18px; }
-
-    /* Modal */
-    .er-modal-overlay {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.75);
-      z-index: 3000;
-      display: flex; align-items: center; justify-content: center;
-      padding: 24px;
-    }
-    .er-modal-box {
-      background: #0d0d1f;
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-xl);
-      max-width: 860px; width: 100%;
-      max-height: 90vh; overflow-y: auto;
-      padding: 36px;
-      position: relative;
-    }
-    .er-modal-close {
-      position: absolute; top: 16px; right: 16px;
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      color: var(--color-text-primary);
-      border-radius: var(--radius-sm);
-      padding: 6px 12px; font-size: 1rem; cursor: pointer;
-    }
   </style>
 </head>
 <body>
@@ -101,19 +75,27 @@
       Browse Books
     </h1>
     <p style="color:var(--color-text-secondary);font-size:.9rem;margin-bottom:32px;">
-      Explore our full catalog. Filter by genre or sort to find what you love.
+      Explore our full catalog. Filter by genre, search by title, or sort to find your favorite read.
     </p>
 
-    <!-- Genre filters + Sort -->
-    <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:28px;">
+    <!-- Genre filters + Search + Sort -->
+    <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between;margin-bottom:28px;width:100%;">
       <div id="genre-filters" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
-      <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
-        <span style="font-size:.8rem;color:var(--color-text-secondary);">Sort by</span>
-        <select id="sort-select" class="sort-select">
-          <option value="latest">Latest</option>
-          <option value="popular">Most Popular</option>
-          <option value="rated">Highest Rated</option>
-        </select>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end;flex:1;">
+        <!-- Live Search Bar -->
+        <div style="position:relative;display:flex;align-items:center;background:rgba(255,255,255,0.04);border:1px solid var(--color-border);border-radius:var(--radius-full);padding:2px 8px 2px 16px;width:240px;transition:border-color var(--transition-fast);">
+          <span style="color:var(--color-text-secondary);font-size:.8rem;margin-right:6px;pointer-events:none;">🔍</span>
+          <input id="search-input" type="text" placeholder="Search title or author..." style="background:transparent;border:none;outline:none;color:#fff;font-size:.82rem;padding:6px 0;width:100%;font-family:'Inter',sans-serif;" />
+        </div>
+        <!-- Sort Dropdown -->
+        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+          <span style="font-size:.8rem;color:var(--color-text-secondary);">Sort by</span>
+          <select id="sort-select" class="sort-select">
+            <option value="latest">Latest</option>
+            <option value="popular">Most Popular</option>
+            <option value="rated">Highest Rated</option>
+          </select>
+        </div>
       </div>
     </div>
   </div>
@@ -130,21 +112,27 @@
     <div id="no-results" style="display:none;text-align:center;padding:64px 24px;color:var(--color-text-secondary);">
       <p style="font-size:3rem;margin-bottom:12px;">📭</p>
       <p style="font-size:1.1rem;font-weight:600;color:var(--color-text-primary);">No books found</p>
-      <p style="font-size:.85rem;margin-top:6px;">Try a different genre or sort order.</p>
+      <p style="font-size:.85rem;margin-top:6px;">Try a different search query or genre filter.</p>
     </div>
   </div>
 
   <!-- Book Details Modal -->
   <div id="book-details-modal"></div>
+
+</div>
+
 <script>
   const token = localStorage.getItem('echoreads_token');
   const API_BASE_URL = '/api';
 
   async function fetchBooks(genre = null) {
     const sort = document.getElementById('sort-select')?.value || 'latest';
-    const url = genre
-      ? `${API_BASE_URL}/books?genre=${encodeURIComponent(genre)}&sort=${sort}`
-      : `${API_BASE_URL}/books?sort=${sort}`;
+    const searchVal = document.getElementById('search-input')?.value || '';
+    
+    let url = `${API_BASE_URL}/books?sort=${sort}`;
+    if (genre) url += `&genre=${encodeURIComponent(genre)}`;
+    if (searchVal) url += `&search=${encodeURIComponent(searchVal)}`;
+
     try {
       const res = await fetch(url, {
         headers: token ? { 'Authorization': `Bearer ${token}` } : {}
@@ -207,7 +195,7 @@
 
   function filterByGenre(genre, btn) {
     document.querySelectorAll('.genre-filter-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
+    if (btn) btn.classList.add('active');
     fetchBooks(genre);
   }
 
@@ -222,10 +210,23 @@
         if (match) { btns.forEach(b => b.classList.remove('active')); match.classList.add('active'); }
       }
     });
+
+    // Listeners for sort change and live search input
     document.getElementById('sort-select').addEventListener('change', () => {
       const active = document.querySelector('.genre-filter-btn.active');
       const g = active && active.textContent.trim() !== 'All' ? active.textContent.trim() : null;
       fetchBooks(g);
+    });
+
+    // Live search input with simple debounce
+    let debounceTimer;
+    document.getElementById('search-input').addEventListener('input', () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        const active = document.querySelector('.genre-filter-btn.active');
+        const g = active && active.textContent.trim() !== 'All' ? active.textContent.trim() : null;
+        fetchBooks(g);
+      }, 300);
     });
   });
 </script>

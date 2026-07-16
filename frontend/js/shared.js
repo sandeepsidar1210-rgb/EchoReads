@@ -26,6 +26,7 @@
   const NAV_LINKS = [
     { href: 'index.html',    label: 'Home',     icon: '🏠' },
     { href: 'browse.html',   label: 'Browse',   icon: '📚' },
+    { href: 'search.html',   label: 'Search',   icon: '🔍' },
     { href: 'genres.html',   label: 'Genres',   icon: '🎭' },
     { href: 'novia.html',    label: 'Novia AI', icon: '🤖' },
     { href: 'cart.html',     label: 'Cart',     icon: '🛒', cart: true },
@@ -276,13 +277,11 @@
       if (book.purchaseUrl && book.purchaseUrl.includes('gutenberg.org/ebooks/')) {
         const gutenbergId = book.purchaseUrl.split('/').pop().trim();
         if (gutenbergId) {
-          // Point directly to Gutenberg download listing for this ebook
           pdfLink = `https://www.gutenberg.org/ebooks/${gutenbergId}`;
         } else {
           pdfLink = `https://archive.org/search.php?query=${encodeURIComponent(book.title + ' ' + book.author)}+AND+mediatype:texts`;
         }
       } else {
-        // Search Archive.org for real public-domain free PDF
         pdfLink = `https://archive.org/search.php?query=${encodeURIComponent(book.title + ' ' + book.author)}+AND+mediatype:texts`;
       }
 
