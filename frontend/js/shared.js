@@ -271,8 +271,20 @@
       if (!data.success) throw new Error();
       const book = data.data;
 
-      // Check if book has a pdfUrl or standard free fallback
-      const pdfLink = book.pdfUrl || 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf';
+      // Extract Gutenberg ID or generate dynamic Project Gutenberg / Archive.org free PDF link
+      let pdfLink = '';
+      if (book.purchaseUrl && book.purchaseUrl.includes('gutenberg.org/ebooks/')) {
+        const gutenbergId = book.purchaseUrl.split('/').pop().trim();
+        if (gutenbergId) {
+          // Point directly to Gutenberg download listing for this ebook
+          pdfLink = `https://www.gutenberg.org/ebooks/${gutenbergId}`;
+        } else {
+          pdfLink = `https://archive.org/search.php?query=${encodeURIComponent(book.title + ' ' + book.author)}+AND+mediatype:texts`;
+        }
+      } else {
+        // Search Archive.org for real public-domain free PDF
+        pdfLink = `https://archive.org/search.php?query=${encodeURIComponent(book.title + ' ' + book.author)}+AND+mediatype:texts`;
+      }
 
       modal.innerHTML = `
         <div class="er-modal-overlay" onclick="window.closeBookDetails(event)">
@@ -289,8 +301,13 @@
                   <span style="color:var(--color-text-muted);font-size:.8rem;">${book.totalRatings} ratings</span>
                 </div>
                 <h4 style="font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-muted);margin-bottom:8px;">Summary</h4>
-                <p style="font-size:.875rem;color:var(--color-text-secondary);line-height:1.75;margin-bottom:24px;">${book.summary || book.description || 'No summary available.'}</p>
+                <p style="font-size:.875rem;color:var(--color-text-secondary);line-height:1.75;margin-bottom:20px;">${book.summary || book.description || 'No summary available.'}</p>
                 
+                ${book.content ? `
+                  <h4 style="font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-muted);margin-bottom:8px;">Detailed Summary / Preview</h4>
+                  <div style="font-size:.85rem;color:var(--color-text-secondary);line-height:1.7;background:rgba(255,255,255,0.02);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:14px;max-height:180px;overflow-y:auto;white-space:pre-wrap;margin-bottom:24px;font-family:'Inter',sans-serif;">${book.content}</div>
+                ` : ''}
+
                 <div style="display:flex;align-items:center;justify-content:space-between;padding-top:20px;border-top:1px solid var(--color-border);flex-wrap:wrap;gap:16px;">
                   <span style="font-size:2rem;font-weight:900;color:var(--color-gold);">$${book.price.toFixed(2)}</span>
                   <div style="display:flex;gap:10px;flex-wrap:wrap;">
