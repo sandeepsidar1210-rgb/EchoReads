@@ -9,8 +9,8 @@ let geminiModel = null;
 if (process.env.GEMINI_API_KEY) {
   try {
     genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    // Use gemini-1.5-flash as it is highly efficient and suitable for chat recommendations
-    geminiModel = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    // Use gemini-2.5-flash as gemini-1.5-flash is retired in the current model registry
+    geminiModel = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
     console.log('✅ Gemini AI Engine loaded successfully.');
   } catch (err) {
     console.error('⚠️ Error initializing Gemini AI client:', err);
