@@ -1,64 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Cart - EchoReads</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body {
-            background: radial-gradient(at 70% 30%, #111827, #030712);
-            color: #e5e7eb;
-            font-family: 'Inter', system-ui, sans-serif;
-        }
-        .glass {
-            background: rgba(17, 24, 39, 0.7);
-            backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shopping Cart — EchoReads</title>
+  <meta name="description" content="Review your selected books and proceed to checkout on EchoReads." />
+  <link rel="stylesheet" href="css/shared.css" />
+  <script src="js/shared.js" defer></script>
+  <style>
+    .glass {
+      background: var(--color-bg-card);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl);
+    }
+    .empty-cart-icon { font-size: 5rem; margin-bottom: 16px; animation: float 3s ease-in-out infinite; }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+    .cart-item-card {
+      display: flex; gap: 16px; align-items: center;
+      padding: 16px 20px;
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      transition: border-color var(--transition-base);
+    }
+    .cart-item-card:hover { border-color: var(--color-border-hover); }
+  </style>
 </head>
-<body class="min-h-screen flex flex-col">
-    <!-- Interactive Header -->
-    <header class="sticky top-0 z-40 bg-gray-900/80 backdrop-blur-md border-b border-gray-800/80">
-        <div class="container mx-auto px-6 py-4 flex items-center justify-between">
-            <div class="flex items-center space-x-4">
-                <button onclick="window.location.href='index.html'" class="bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 px-4 py-2 rounded-full text-sm font-medium transition">
-                    ← Home
-                </button>
-                <a href="index.html" class="text-2xl font-bold tracking-tight"><span class="text-emerald-400">Echo</span><span class="text-white">Reads</span></a>
-            </div>
-            <nav class="space-x-6 text-gray-400 font-medium">
-                <a class="hover:text-white transition" href="browse.html">Browse</a>
-                <a class="hover:text-white transition" href="genres.html">Genres</a>
-                <a class="hover:text-white transition" href="novia.html">Novia AI</a>
-                <a class="text-emerald-400 font-semibold" href="cart.html">Cart</a>
-            </nav>
+<body>
+<div class="er-page">
+
+  <main style="padding: 48px 32px 80px; max-width: 1100px; margin: 0 auto; flex: 1;">
+    <div style="margin-bottom: 32px;">
+      <h1 style="font-family:'Space Grotesk',sans-serif;font-size:2.2rem;font-weight:900;margin-bottom:6px;">Shopping Cart</h1>
+      <p style="color:var(--color-text-secondary);font-size:.9rem;">Review your selected literary works before unlocking digital access.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 340px;gap:28px;align-items:start;">
+      <!-- Items -->
+      <div id="cart-list" style="display:flex;flex-direction:column;gap:14px;">
+        <!-- Skeletons while loading -->
+        <div class="er-skeleton" style="height:90px;"></div>
+        <div class="er-skeleton" style="height:90px;"></div>
+        <div class="er-skeleton" style="height:90px;"></div>
+      </div>
+      <!-- Summary -->
+      <div class="glass" style="padding:24px;position:sticky;top:calc(var(--nav-height) + 16px);">
+        <h3 style="font-size:1rem;font-weight:700;padding-bottom:16px;border-bottom:1px solid var(--color-border);margin-bottom:16px;">Order Summary</h3>
+        <div id="cart-totals-area">
+          <p style="font-size:.85rem;color:var(--color-text-secondary);">Add books to your cart to begin checkout.</p>
         </div>
-    </header>
-
-    <main class="container mx-auto px-6 py-12 flex-1 max-w-5xl">
-        <h1 class="text-4xl font-extrabold text-white mb-2 tracking-tight">Shopping Cart</h1>
-        <p class="text-gray-400 mb-8 text-sm">Review your selected literary works before unlocking digital access.</p>
-
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Cart Items List -->
-            <div id="cart-list" class="lg:col-span-2 space-y-4">
-                <!-- Dynamically loaded -->
-                <div class="text-center p-12 text-gray-500">Loading your cart items...</div>
-            </div>
-
-            <!-- Cart Summary Summary -->
-            <div class="lg:col-span-1">
-                <div id="cart-summary-box" class="glass rounded-2xl p-6 shadow-xl border border-gray-850/60 sticky top-24">
-                    <h3 class="text-lg font-bold text-white mb-4 border-b border-gray-800 pb-3">Cart Summary</h3>
-                    <div id="cart-totals-area" class="space-y-4">
-                        <!-- Loaded by JS -->
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main>
+      </div>
+    </div>
+  </main>
 
     <script>
         const token = localStorage.getItem('echoreads_token');
@@ -90,16 +84,14 @@
 
             if (!items || items.length === 0) {
                 cartList.innerHTML = `
-                    <div class="glass rounded-2xl p-12 text-center border border-gray-800/40">
-                        <p class="text-gray-400 mb-4">Your shopping cart is empty.</p>
-                        <a href="browse.html" class="inline-block px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-full text-sm font-semibold transition">
-                            Explore Books
-                        </a>
+                    <div style="text-align:center;padding:64px 24px;background:var(--color-bg-card);border:1px solid var(--color-border);border-radius:var(--radius-xl);">
+                      <div class="empty-cart-icon">🛒</div>
+                      <h3 style="font-size:1.2rem;font-weight:700;margin-bottom:8px;">Your cart is empty</h3>
+                      <p style="color:var(--color-text-secondary);font-size:.875rem;margin-bottom:24px;">Discover your next favorite book and add it here.</p>
+                      <a href="browse.html" class="er-btn er-btn-primary">Browse Books</a>
                     </div>
                 `;
-                totalsArea.innerHTML = `
-                    <p class="text-gray-400 text-sm">Add books to your cart to begin checkout.</p>
-                `;
+                totalsArea.innerHTML = `<p style="font-size:.85rem;color:var(--color-text-secondary);">Add books to begin checkout.</p>`;
                 return;
             }
 
@@ -109,44 +101,40 @@
                 const itemTotal = book.price ? (book.price * item.quantity) : 0;
                 total += itemTotal;
 
-                const itemCard = `
-                    <div class="glass rounded-2xl p-4 flex gap-4 items-center border border-gray-800/50 hover:border-cyan-500/20 transition duration-300">
-                        ${book.imageUrl ? `<img src="${book.imageUrl}" class="w-14 h-20 object-cover rounded shadow-md flex-shrink-0" />` : ''}
-                        <div class="flex-1 min-w-0">
-                            <h4 class="text-base font-semibold text-white truncate">${book.title || 'Unknown Book'}</h4>
-                            <p class="text-xs text-gray-400 truncate">by ${book.author || 'N/A'}</p>
-                            <div class="flex items-center gap-4 mt-2 text-xs">
-                                <span class="text-gray-400">Qty: <strong class="text-white">${item.quantity}</strong></span>
-                                <span class="text-emerald-400 font-semibold">$${book.price ? book.price.toFixed(2) : '0.00'}</span>
-                            </div>
-                        </div>
-                        <div class="text-right flex-shrink-0">
-                            <p class="text-sm font-bold text-white mb-2">$${itemTotal.toFixed(2)}</p>
-                            <button onclick="removeFromCart('${item._id}')" class="text-xs text-rose-400 hover:text-rose-300 font-semibold hover:underline">
-                                Remove
-                            </button>
-                        </div>
-                    </div>
+                const itemCard = document.createElement('div');
+                itemCard.className = 'cart-item-card';
+                itemCard.innerHTML = `
+                  ${book.imageUrl ? `<img src="${book.imageUrl}" style="width:52px;height:72px;object-fit:cover;border-radius:var(--radius-sm);flex-shrink:0;" />` : '<div style="width:52px;height:72px;background:var(--color-surface);border-radius:var(--radius-sm);flex-shrink:0;"></div>'}
+                  <div style="flex:1;min-width:0;">
+                    <h4 style="font-size:.9rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px;">${book.title || 'Unknown Book'}</h4>
+                    <p style="font-size:.78rem;color:var(--color-text-secondary);margin-bottom:8px;">by ${book.author || 'N/A'}</p>
+                    <span class="er-badge er-badge-emerald">Digital Access</span>
+                  </div>
+                  <div style="text-align:right;flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:10px;">
+                    <span style="font-size:1rem;font-weight:800;color:var(--color-gold);">$${itemTotal.toFixed(2)}</span>
+                    <button onclick="removeFromCart('${item._id}')" style="font-size:.75rem;color:var(--color-rose);font-weight:600;background:none;border:none;cursor:pointer;padding:4px 0;">✕ Remove</button>
+                  </div>
                 `;
-                cartList.innerHTML += itemCard;
+                cartList.appendChild(itemCard);
             });
 
             totalsArea.innerHTML = `
-                <div class="flex justify-between items-center text-sm">
-                    <span class="text-gray-400">Subtotal</span>
-                    <span class="text-white font-medium">$${total.toFixed(2)}</span>
+                <div style="display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:10px;">
+                  <span style="color:var(--color-text-secondary);">Subtotal</span>
+                  <span>$${total.toFixed(2)}</span>
                 </div>
-                <div class="flex justify-between items-center text-sm border-b border-gray-800 pb-4">
-                    <span class="text-gray-400">Digital Delivery</span>
-                    <span class="text-emerald-400 font-semibold">FREE</span>
+                <div style="display:flex;justify-content:space-between;font-size:.85rem;padding-bottom:14px;border-bottom:1px solid var(--color-border);">
+                  <span style="color:var(--color-text-secondary);">Digital Delivery</span>
+                  <span style="color:var(--color-emerald);font-weight:700;">FREE</span>
                 </div>
-                <div class="flex justify-between items-center pt-2">
-                    <span class="text-base text-gray-300 font-bold">Total</span>
-                    <span class="text-xl text-amber-400 font-extrabold">$${total.toFixed(2)}</span>
+                <div style="display:flex;justify-content:space-between;padding-top:14px;margin-bottom:20px;">
+                  <span style="font-weight:700;">Total</span>
+                  <span style="font-size:1.4rem;font-weight:900;color:var(--color-gold);">$${total.toFixed(2)}</span>
                 </div>
-                <button onclick="window.location.href='checkout.html'" class="w-full mt-4 bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white py-3 rounded-xl font-bold text-sm tracking-wider shadow-lg shadow-emerald-950/30 transition duration-300">
-                    PROCEED TO CHECKOUT
+                <button onclick="window.location.href='checkout.html'" class="er-btn er-btn-teal" style="width:100%;justify-content:center;font-size:.9rem;padding:14px;">
+                  Proceed to Checkout →
                 </button>
+                <p style="text-align:center;font-size:.72rem;color:var(--color-text-muted);margin-top:10px;">🔒 Secured by Stripe</p>
             `;
         }
 
@@ -169,5 +157,6 @@
 
         document.addEventListener('DOMContentLoaded', fetchCart);
     </script>
+</div>
 </body>
 </html>

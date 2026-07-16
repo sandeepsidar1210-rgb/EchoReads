@@ -1,328 +1,481 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EchoReads: Your Next Story Awaits</title>
-    <!-- Load Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* Custom Base Styles */
-        body {
-            font-family: 'Inter', sans-serif;
-            /* Deep Blue/Purple Gradient Background for Aesthetic requirement */
-            background: radial-gradient(at 70% 30%, #171730, #0a0a1a);
-            min-height: 100vh;
-            color: #e2e8f0; /* Light gray text for contrast */
-        }
-        
-        /* Custom Tailwind Configuration for smooth color blend */
-        .header-scrolled {
-            background-color: rgba(15, 23, 42, 0.95); /* Dark slate with slight transparency */
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EchoReads — Your AI-Powered Book Universe</title>
+  <meta name="description" content="Discover thousands of e-books, get AI-powered recommendations from Novia, and listen to audiobooks with our built-in TTS reader. EchoReads — Your next story awaits." />
+  <link rel="stylesheet" href="css/shared.css" />
+  <script src="js/shared.js" defer></script>
+  <style>
+    /* ── Hero ─────────────────────────────── */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      overflow: hidden;
+      padding: 120px 24px 80px;
+    }
+    .hero-bg {
+      position: absolute; inset: 0;
+      background-image: url('hero_bg.png');
+      background-size: cover;
+      background-position: center;
+      opacity: 0.18;
+    }
+    .hero-orb-1 { width:500px;height:500px;top:-120px;left:-80px; }
+    .hero-orb-2 { width:400px;height:400px;bottom:-100px;right:-60px; }
+    .hero-orb-3 { width:300px;height:300px;top:40%;left:50%;transform:translate(-50%,-50%); }
 
-        /* Keyframe for subtle animation */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+    .hero-content { position:relative;z-index:2;max-width:820px;margin:0 auto; }
 
-        /* Apply animation class for scroll-based effect */
-        .animate-on-scroll {
-            opacity: 0;
-        }
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      background: rgba(34,211,238,0.1);
+      border: 1px solid rgba(34,211,238,0.25);
+      border-radius: var(--radius-full);
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--color-teal);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+    .hero-eyebrow span { width:6px;height:6px;background:var(--color-teal);border-radius:50%;animation:blink 1.4s infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-        .fade-in-visible {
-            animation: fadeIn 0.8s ease-out forwards;
-        }
+    .hero-title {
+      font-size: clamp(2.6rem, 7vw, 5.5rem);
+      font-weight: 900;
+      letter-spacing: -2px;
+      line-height: 1.05;
+      margin-bottom: 24px;
+    }
 
-        /* Custom gradient for Novia feature card (Bright Teal/Cyan blend) */
-        .novia-gradient-border {
-            border: 2px solid;
-            border-image-slice: 1;
-            border-image-source: linear-gradient(90deg, #14b8a6, #06b6d4);
-        }
+    .hero-sub {
+      font-size: clamp(1rem, 2.5vw, 1.2rem);
+      color: var(--color-text-secondary);
+      max-width: 560px;
+      margin: 0 auto 40px;
+      line-height: 1.75;
+    }
 
-        /* Custom gold/amber CTA button blend */
-        .cta-gradient {
-            background: linear-gradient(90deg, #f59e0b, #fbbf24);
-        }
-    </style>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'primary-dark': '#0a0a1a',
-                        'accent-teal': '#14b8a6',
-                        'accent-gold': '#fbbf24',
-                    }
-                }
-            }
-        }
-    </script>
-    <!-- Include our main JavaScript file -->
-    <script src="js/main.js"></script>
+    .hero-ctas { display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:48px; }
+
+    .hero-search-wrap {
+      max-width: 520px;
+      margin: 0 auto;
+      display: flex;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+      transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    }
+    .hero-search-wrap:focus-within {
+      border-color: var(--color-teal);
+      box-shadow: 0 0 0 3px rgba(34,211,238,0.12);
+    }
+    .hero-search-wrap input {
+      flex:1;background:transparent;border:none;outline:none;
+      padding:14px 20px;color:var(--color-text-primary);font-size:0.9rem;font-family:'Inter',sans-serif;
+    }
+    .hero-search-wrap input::placeholder{color:var(--color-text-muted);}
+    .hero-search-wrap button {
+      padding:12px 24px;background:var(--gradient-teal);color:#000;
+      font-weight:700;font-size:0.85rem;border:none;cursor:pointer;
+      transition:filter var(--transition-fast);
+    }
+    .hero-search-wrap button:hover{filter:brightness(1.1);}
+
+    .hero-social-proof {
+      display:flex;align-items:center;justify-content:center;gap:24px;
+      margin-top:40px;flex-wrap:wrap;
+    }
+    .hero-social-proof .avatars {
+      display:flex;
+    }
+    .hero-social-proof .avatars span {
+      width:32px;height:32px;border-radius:50%;border:2px solid var(--color-bg-primary);
+      background: linear-gradient(135deg,#667eea,#764ba2);
+      display:inline-flex;align-items:center;justify-content:center;font-size:0.7rem;
+      margin-left:-10px;
+    }
+    .hero-social-proof .avatars span:first-child{margin-left:0;}
+    .hero-social-proof p { font-size:0.8rem;color:var(--color-text-secondary); }
+    .hero-social-proof strong{color:var(--color-text-primary);}
+
+    /* ── Marquee / ticker ─────────────────── */
+    .er-marquee-wrap {
+      overflow:hidden;
+      padding:20px 0;
+      border-top:1px solid var(--color-border);
+      border-bottom:1px solid var(--color-border);
+      background: rgba(255,255,255,0.02);
+    }
+    .er-marquee-track {
+      display:flex;gap:48px;
+      animation:marquee 28s linear infinite;
+      width:max-content;
+    }
+    @keyframes marquee { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+    .er-marquee-item {
+      display:flex;align-items:center;gap:10px;
+      font-size:0.85rem;font-weight:500;color:var(--color-text-secondary);
+      white-space:nowrap;
+    }
+    .er-marquee-item .dot{width:4px;height:4px;background:var(--color-teal);border-radius:50%;}
+
+    /* ── Stats ────────────────────────────── */
+    .stats-grid {
+      display:grid;grid-template-columns:repeat(4,1fr);gap:2px;
+      border:1px solid var(--color-border);border-radius:var(--radius-xl);overflow:hidden;
+    }
+    .stat-item {
+      padding:40px 28px;text-align:center;
+      background:var(--color-bg-card);
+      transition:background var(--transition-base);
+    }
+    .stat-item:hover{background:var(--color-bg-card-hover);}
+    .stat-num {
+      font-family:'Space Grotesk',sans-serif;
+      font-size:clamp(2rem,4vw,3rem);font-weight:900;
+      background:var(--gradient-gold);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+    }
+    .stat-label{color:var(--color-text-secondary);font-size:0.85rem;margin-top:6px;}
+
+    @media(max-width:768px){.stats-grid{grid-template-columns:repeat(2,1fr);}}
+    @media(max-width:480px){.stats-grid{grid-template-columns:1fr;}}
+
+    /* ── Featured Books carousel ──────────── */
+    .books-scroll {
+      display:flex;gap:20px;overflow-x:auto;padding-bottom:16px;
+      scrollbar-width:none;-ms-overflow-style:none;
+    }
+    .books-scroll::-webkit-scrollbar{display:none;}
+    .books-scroll .er-book-card{flex:0 0 180px;}
+    .books-scroll .er-book-card img{height:240px;}
+
+    /* ── How it Works ─────────────────────── */
+    .how-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
+    .how-step{
+      padding:36px 28px;text-align:center;
+      background:var(--color-bg-card);border:1px solid var(--color-border);
+      border-radius:var(--radius-xl);position:relative;overflow:hidden;
+      transition:border-color var(--transition-base),transform var(--transition-base);
+    }
+    .how-step:hover{border-color:var(--color-border-hover);transform:translateY(-4px);}
+    .how-step-num{
+      font-size:4rem;font-weight:900;line-height:1;
+      background:var(--gradient-teal);-webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;background-clip:text;
+      margin-bottom:16px;display:block;
+    }
+    .how-step h3{font-size:1.15rem;margin-bottom:10px;}
+    .how-step p{font-size:0.875rem;color:var(--color-text-secondary);line-height:1.7;}
+    @media(max-width:768px){.how-grid{grid-template-columns:1fr;}}
+
+    /* ── Novia Banner ─────────────────────── */
+    .novia-banner {
+      border-radius:var(--radius-xl);
+      background: linear-gradient(135deg,rgba(34,211,238,0.08),rgba(139,92,246,0.08));
+      border:1px solid rgba(34,211,238,0.18);
+      padding:60px 48px;
+      display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;
+    }
+    .novia-chat-preview {
+      background:rgba(5,5,15,0.7);border:1px solid var(--color-border);
+      border-radius:var(--radius-lg);padding:20px;
+      display:flex;flex-direction:column;gap:12px;
+    }
+    .novia-msg{padding:10px 14px;border-radius:12px;font-size:0.82rem;line-height:1.5;max-width:85%;}
+    .novia-msg.ai{background:rgba(34,211,238,0.1);border:1px solid rgba(34,211,238,0.2);color:var(--color-text-primary);}
+    .novia-msg.user{background:rgba(245,183,49,0.12);border:1px solid rgba(245,183,49,0.2);align-self:flex-end;color:var(--color-text-primary);}
+    .novia-typing{display:flex;gap:4px;align-items:center;padding:10px 14px;}
+    .novia-typing span{width:6px;height:6px;background:var(--color-teal);border-radius:50%;animation:typing 1.2s infinite;}
+    .novia-typing span:nth-child(2){animation-delay:.2s;}
+    .novia-typing span:nth-child(3){animation-delay:.4s;}
+    @keyframes typing{0%,60%,100%{transform:translateY(0);opacity:.6}30%{transform:translateY(-6px);opacity:1}}
+    @media(max-width:768px){
+      .novia-banner{grid-template-columns:1fr;padding:36px 24px;}
+    }
+
+    /* ── Genre preview ────────────────────── */
+    .genre-pills{display:flex;flex-wrap:wrap;gap:10px;}
+    .genre-pill{
+      padding:8px 18px;border-radius:var(--radius-full);
+      font-size:0.82rem;font-weight:600;cursor:pointer;
+      border:1px solid var(--color-border);
+      background:var(--color-bg-card);color:var(--color-text-secondary);
+      transition:all var(--transition-fast);
+    }
+    .genre-pill:hover{
+      background:rgba(34,211,238,0.1);border-color:rgba(34,211,238,0.35);
+      color:var(--color-teal);transform:translateY(-2px);
+    }
+
+    /* ── CTA Bottom ───────────────────────── */
+    .cta-section{
+      text-align:center;padding:100px 24px;
+      background:linear-gradient(180deg,transparent,rgba(34,211,238,0.04));
+    }
+    .cta-section h2{font-size:clamp(2rem,5vw,3.5rem);font-weight:900;margin-bottom:16px;letter-spacing:-1px;}
+  </style>
 </head>
 <body>
+<div class="er-page">
 
-    <!-- 1. Interactive Header -->
-    <header id="main-header" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-transparent">
-        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <div class="text-3xl font-bold text-accent-gold transition-colors duration-300">
-                Echo<span class="text-white">Reads</span>
-            </div>
-            <div class="space-x-8 hidden md:flex text-gray-300 font-medium items-center">
-                <a href="index.html" class="hover:text-accent-teal transition duration-200">Home</a>
-                <a href="novia.html" class="hover:text-accent-teal transition duration-200">Novia AI</a>
-                <a href="genres.html" class="hover:text-accent-teal transition duration-200">Genres</a>
-                <a href="features.html" class="hover:text-accent-teal transition duration-200">Features</a>
-                <a href="cart.html" class="hover:text-accent-teal transition duration-200">Cart</a>
-                <a href="signin.html" id="signin-link" class="ml-4 px-4 py-2 rounded-full border border-accent-teal text-accent-teal hover:bg-accent-teal hover:text-white transition">Sign In</a>
-                <span id="user-pill" class="hidden ml-3 px-3 py-1 rounded-full bg-gray-700 text-white text-sm"></span>
-                <button id="signout-btn" class="hidden ml-3 px-4 py-2 rounded-full border border-red-500 text-red-400 hover:bg-red-600 hover:text-white transition">Sign Out</button>
-            </div>
-            <a href="menu.html" class="md:hidden text-gray-300 hover:text-accent-teal">
-                <!-- Mock Menu Icon -->
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-            </a>
-        </nav>
-    </header>
+  <!-- ── HERO ─────────────────────────────────────────── -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="er-orb er-orb-teal hero-orb-1"></div>
+    <div class="er-orb er-orb-gold hero-orb-2"></div>
+    <div class="er-orb er-orb-purple hero-orb-3" style="opacity:.2"></div>
 
-    <main>
-        <!-- 2. Header/Hero Section -->
-        <section id="hero" class="relative pt-32 pb-24 md:pt-48 md:pb-40 text-center overflow-hidden">
-            <!-- Subtle Dark Parallax Image/Texture placeholder -->
-            <div class="absolute inset-0 opacity-10 bg-cover bg-center" style="background-image: url('https://placehold.co/1200x800/18182a/fff?text=Subtle+Book+Pattern');"></div>
-            
-            <div class="container mx-auto px-6 relative z-10 animate-on-scroll">
-                <h1 class="text-5xl md:text-7xl font-extrabold text-white leading-tight">
-                    EchoReads: Your Next Story <span class="text-accent-teal">Awaits.</span>
-                </h1>
-                <p class="text-xl text-gray-400 mt-6 max-w-3xl mx-auto">
-                    Dive into reading online, enjoy a vast library of e-books, and effortlessly explore novels across every genre.
-                </p>
-                <a href="browse.html" class="inline-block mt-8 px-8 py-4 text-lg font-semibold text-black bg-accent-gold rounded-full hover:bg-yellow-500 transform hover:scale-105 transition duration-300">
-                    Start Reading Free
-                </a>
-
-            </div>
-        </section>
-
-        <!-- 3. Feature 1: AI Assistant "Novia" -->
-        <section id="novia" class="py-20 md:py-28 animate-on-scroll">
-            <div class="container mx-auto px-6">
-                <div class="max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-12 p-8 rounded-2xl bg-slate-800/60 novia-gradient-border shadow-2xl shadow-slate-900/50">
-                    
-                    <!-- Novia Icon / Interactive Element -->
-                    <div class="flex-shrink-0 text-center">
-                        <svg class="w-20 h-20 md:w-28 md:h-28 text-cyan-400 animate-pulse mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <!-- Animated Chat Bubble/Microphone Icon -->
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h10M7 16h8m-9-3.5L8.5 13a4 4 0 01-3.5-3.5h0a4 4 0 014-4h0a4 4 0 014 4h0a4 4 0 01-3.5 3.5l-1.5 1.5M12 19V5"></path>
-                        </svg>
-                        <span class="text-cyan-400 font-semibold block mt-2">Live Now</span>
-                    </div>
-
-                    <!-- Novia Content -->
-                    <div>
-                        <h2 class="text-4xl font-extrabold text-white mb-4">Meet <span class="text-cyan-400">Novia,</span> Your AI Reading Assistant</h2>
-                        <p class="text-gray-300 text-lg mb-4">
-                            Novia is more than just a chatbot—she's your personal literary guide. Get instant book suggestions tailored to your mood, have your reading queries answered, or simply ask Novia to narrate any e-book as a seamless audio experience.
-                        </p>
-                        <a href="novia.html" class="inline-block text-white font-semibold py-2 px-6 rounded-full bg-cyan-600 transition duration-300 hover:bg-cyan-500 hover:shadow-lg hover:shadow-cyan-500/30">
-                            Try Novia
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 4. Explore by Category (links to dedicated page) -->
-        <section id="genres" class="py-20 md:py-32 animate-on-scroll">
-            <div class="container mx-auto px-6 text-center">
-                <h2 class="text-5xl font-extrabold text-white mb-6">Explore by Category</h2>
-                <p class="text-gray-400 max-w-2xl mx-auto">Browse curated genres and discover books tailored to your taste.</p>
-                <a href="genres.html" class="inline-block mt-8 text-lg font-semibold text-indigo-400 hover:text-indigo-300 transition duration-200">
-                    View different categories &rarr;
-                </a>
-                <div class="mt-10 grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div class="p-6 rounded-xl bg-slate-800/60">🎧 Audio-ready</div>
-                  <div class="p-6 rounded-xl bg-slate-800/60">📱 Device Sync</div>
-                  <div class="p-6 rounded-xl bg-slate-800/60">🔎 Smart Search</div>
-                  <div class="p-6 rounded-xl bg-slate-800/60">🤖 Novia AI</div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 5. Stats / Social Proof -->
-        <section class="py-14 bg-slate-900/40">
-          <div class="container mx-auto px-6 text-center">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
-              <div><div class="text-4xl font-extrabold text-accent-gold">+500</div><div class="text-gray-400">Books</div></div>
-              <div><div class="text-4xl font-extrabold text-accent-gold">+50</div><div class="text-gray-400">Genres</div></div>
-              <div><div class="text-4xl font-extrabold text-accent-gold">4.7★</div><div class="text-gray-400">Avg Rating</div></div>
-              <div><div class="text-4xl font-extrabold text-accent-gold">24/7</div><div class="text-gray-400">Support</div></div>
-            </div>
-          </div>
-        </section>
-
-        <!-- 5. Feature 3: Book Details & Linking -->
-        <section id="features" class="py-20 md:py-32 bg-slate-900/50 animate-on-scroll">
-            <div class="container mx-auto px-6 text-center">
-                <h2 class="text-5xl font-extrabold text-white mb-12">Reading Without Limits</h2>
-                
-                <div class="grid md:grid-cols-3 gap-8">
-                    
-                    <!-- Feature Card 1: Read Preview -->
-                    <div class="p-8 rounded-xl bg-slate-800/70 shadow-xl transition duration-300 hover:scale-[1.05] hover:shadow-indigo-600/30">
-                        <svg class="w-12 h-12 text-teal-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v10m-3 6l3-3m0 0l-3-3m3 3H9"></path></svg>
-                        <h3 class="text-2xl font-semibold text-white mb-3">Read Online Preview</h3>
-                        <p class="text-gray-400 mb-6">
-                            Start reading any book instantly with our free online preview feature. No download, no commitment.
-                        </p>
-                        <a href="preview.html" class="block text-center w-full text-white font-semibold py-2 rounded-lg bg-teal-600 transition duration-300 hover:bg-teal-500">
-                            Read Preview
-                        </a>
-                    </div>
-
-                    <!-- Feature Card 2: E-Book/PDF -->
-                    <div class="p-8 rounded-xl bg-slate-800/70 shadow-xl transition duration-300 hover:scale-[1.05] hover:shadow-teal-600/30">
-                        <svg class="w-12 h-12 text-teal-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
-                        <h3 class="text-2xl font-semibold text-white mb-3">E-Book & Device Sync</h3>
-                        <p class="text-gray-400 mb-6">
-                            Download e-book versions (ePub/PDF) to read offline on your favorite reader or mobile device.
-                        </p>
-                        <a href="download.html" class="block text-center w-full text-white font-semibold py-2 rounded-lg bg-indigo-600 transition duration-300 hover:bg-indigo-500">
-                            Download E-Book
-                        </a>
-                    </div>
-
-                    <!-- Feature Card 3: External Linking -->
-                    <div class="p-8 rounded-xl bg-slate-800/70 shadow-xl transition duration-300 hover:scale-[1.05] hover:shadow-amber-600/30">
-                        <svg class="w-12 h-12 text-teal-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                        <h3 class="text-2xl font-semibold text-white mb-3">External Links & Purchase</h3>
-                        <p class="text-gray-400 mb-6">
-                            Want a physical copy? We provide direct links to retailers for every book in our catalog.
-                        </p>
-                        <a href="external.html" class="block text-center w-full text-white font-semibold py-2 rounded-lg bg-amber-600 transition duration-300 hover:bg-amber-500">
-                            Find External Link
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- 6. Footer -->
-    <footer class="bg-primary-dark/50 py-12 border-t border-slate-700">
-        <div class="container mx-auto px-6 text-center">
-            <div class="grid grid-cols-2 md:grid-cols-5 gap-8 text-sm">
-                
-                <!-- Logo/Copyright -->
-                <div class="col-span-2 md:col-span-2 text-left md:text-center">
-                    <p class="text-2xl font-bold text-accent-gold mb-2">Echo<span class="text-white">Reads</span></p>
-                    <p class="text-gray-500">&copy; 2025 EchoReads. All rights reserved.</p>
-                </div>
-                
-                <!-- Mock Links -->
-                <div class="text-left md:text-center">
-                    <p class="font-semibold text-white mb-3">Company</p>
-                    <ul class="space-y-2 text-gray-400">
-                        <li><a href="about.html" class="hover:text-accent-teal transition duration-200">About Us</a></li>
-                        <li><a href="careers.html" class="hover:text-accent-teal transition duration-200">Careers</a></li>
-                        <li><a href="press.html" class="hover:text-accent-teal transition duration-200">Press</a></li>
-                    </ul>
-                </div>
-                
-                <div class="text-left md:text-center">
-                    <p class="font-semibold text-white mb-3">Legal</p>
-                    <ul class="space-y-2 text-gray-400">
-                        <li><a href="terms.html" class="hover:text-accent-teal transition duration-200">Terms</a></li>
-                        <li><a href="privacy.html" class="hover:text-accent-teal transition duration-200">Privacy Policy</a></li>
-                        <li><a href="security.html" class="hover:text-accent-teal transition duration-200">Security</a></li>
-                    </ul>
-                </div>
-                
-                <div class="text-left md:text-center">
-                    <p class="font-semibold text-white mb-3">Support</p>
-                    <ul class="space-y-2 text-gray-400">
-                        <li><a href="contact.html" class="hover:text-accent-teal transition duration-200">Contact</a></li>
-                        <li><a href="help.html" class="hover:text-accent-teal transition duration-200">Help Center</a></li>
-                        <li><a href="faq.html" class="hover:text-accent-teal transition duration-200">FAQ</a></li>
-                    </ul>
-                </div>
-
-            </div>
+    <div class="hero-content er-reveal">
+      <div class="hero-eyebrow"><span></span> Now with Gemini 2.5 Flash AI</div>
+      <h1 class="hero-title">
+        Your Next Story<br/>
+        <span class="text-gradient-teal">Awaits You.</span>
+      </h1>
+      <p class="hero-sub">
+        Explore thousands of e-books, get AI-powered recommendations, and listen to any book with our built-in TTS audiobook reader.
+      </p>
+      <div class="hero-ctas">
+        <a href="browse.html" class="er-btn er-btn-primary er-btn-lg">Start Reading Free</a>
+        <a href="novia.html" class="er-btn er-btn-outline er-btn-lg">Try Novia AI →</a>
+      </div>
+      <div class="hero-search-wrap">
+        <input type="text" id="hero-search" placeholder="Search for a book, author, or genre…" />
+        <button onclick="goSearch()">Search</button>
+      </div>
+      <div class="hero-social-proof">
+        <div class="avatars">
+          <span>JD</span><span>AS</span><span>MK</span><span>RV</span><span>+</span>
         </div>
-    </footer>
+        <p><strong>2,400+</strong> readers joined this month</p>
+        <div class="er-badge er-badge-gold">★ 4.8 Rating</div>
+      </div>
+    </div>
+  </section>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const header = document.getElementById('main-header');
-            const sections = document.querySelectorAll('section:not(#hero)'); // Sections to animate on scroll
-            const observerOptions = {
-                root: null,
-                rootMargin: '0px',
-                threshold: 0.15 // Section becomes visible when 15% is in view
-            };
+  <!-- ── MARQUEE ───────────────────────────────────────── -->
+  <div class="er-marquee-wrap">
+    <div class="er-marquee-track" id="er-marquee"></div>
+  </div>
 
-            // --- 1. Interactive Header Logic (Scroll event) ---
-            const updateHeader = () => {
-                if (window.scrollY > 50) {
-                    header.classList.add('header-scrolled');
-                } else {
-                    header.classList.remove('header-scrolled');
-                }
-            };
-            window.addEventListener('scroll', updateHeader);
-            updateHeader(); // Run once on load
+  <!-- ── STATS ─────────────────────────────────────────── -->
+  <section style="padding:80px 32px;max-width:1280px;margin:0 auto;">
+    <div class="stats-grid er-reveal">
+      <div class="stat-item">
+        <div class="stat-num" data-count="500" data-suffix="+">0</div>
+        <div class="stat-label">Books Available</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num" data-count="12" data-suffix=" Genres">0</div>
+        <div class="stat-label">Genre Categories</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num" data-count="48" data-suffix=" hrs">0</div>
+        <div class="stat-label">Avg. Reading Time</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num" data-count="100" data-suffix="%">0</div>
+        <div class="stat-label">AI-Powered</div>
+      </div>
+    </div>
+  </section>
 
-            // --- 2. Scroll Animation Logic (Intersection Observer) ---
-            const observer = new IntersectionObserver((entries, observer) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        // Apply the animation class when the section comes into view
-                        entry.target.classList.add('fade-in-visible');
-                        // Stop observing once animated
-                        observer.unobserve(entry.target);
-                    }
-                });
-            }, observerOptions);
+  <!-- ── FEATURED BOOKS ────────────────────────────────── -->
+  <section style="padding:0 32px 80px;max-width:1280px;margin:0 auto;">
+    <div class="er-reveal" style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px;">
+      <div>
+        <h2 class="er-section-title">Trending Books</h2>
+        <p style="color:var(--color-text-secondary);font-size:.9rem;">Hand-picked titles our readers love right now</p>
+      </div>
+      <a href="browse.html" class="er-btn er-btn-outline er-btn-sm">View All →</a>
+    </div>
+    <div class="books-scroll" id="featured-books">
+      <!-- Skeleton placeholders -->
+      <div style="flex:0 0 180px;border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--color-border);">
+        <div class="er-skeleton" style="height:240px;border-radius:0;"></div>
+        <div style="padding:14px;background:var(--color-bg-card);">
+          <div class="er-skeleton" style="height:14px;margin-bottom:8px;"></div>
+          <div class="er-skeleton" style="height:10px;width:60%;"></div>
+        </div>
+      </div>
+      <div style="flex:0 0 180px;border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--color-border);">
+        <div class="er-skeleton" style="height:240px;border-radius:0;"></div>
+        <div style="padding:14px;background:var(--color-bg-card);">
+          <div class="er-skeleton" style="height:14px;margin-bottom:8px;"></div>
+          <div class="er-skeleton" style="height:10px;width:60%;"></div>
+        </div>
+      </div>
+      <div style="flex:0 0 180px;border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--color-border);">
+        <div class="er-skeleton" style="height:240px;border-radius:0;"></div>
+        <div style="padding:14px;background:var(--color-bg-card);">
+          <div class="er-skeleton" style="height:14px;margin-bottom:8px;"></div>
+          <div class="er-skeleton" style="height:10px;width:60%;"></div>
+        </div>
+      </div>
+      <div style="flex:0 0 180px;border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--color-border);">
+        <div class="er-skeleton" style="height:240px;border-radius:0;"></div>
+        <div style="padding:14px;background:var(--color-bg-card);">
+          <div class="er-skeleton" style="height:14px;margin-bottom:8px;"></div>
+          <div class="er-skeleton" style="height:10px;width:60%;"></div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-            sections.forEach(section => {
-                // Add the class used by the observer to track
-                section.classList.add('animate-on-scroll');
-                observer.observe(section);
-            });
+  <hr class="er-divider" />
 
-            // Animate Hero section immediately after setup
-            const heroContent = document.querySelector('#hero .container');
-            if (heroContent) {
-                 heroContent.classList.add('fade-in-visible');
-            }
+  <!-- ── NOVIA AI BANNER ───────────────────────────────── -->
+  <section style="padding:80px 32px;max-width:1280px;margin:0 auto;">
+    <div class="novia-banner er-reveal">
+      <div>
+        <div class="er-badge er-badge-teal" style="margin-bottom:16px;">🤖 Powered by Gemini 2.5 Flash</div>
+        <h2 style="font-size:clamp(1.8rem,4vw,2.8rem);font-weight:900;margin-bottom:16px;letter-spacing:-0.5px;">
+          Meet <span class="text-gradient-teal">Novia,</span><br/>Your AI Librarian
+        </h2>
+        <p style="color:var(--color-text-secondary);line-height:1.75;margin-bottom:28px;font-size:.95rem;">
+          Ask Novia anything — from "best thriller novels for rainy days" to "books like Sherlock Holmes". She searches our entire catalog using Retrieval-Augmented Generation to give you spot-on suggestions.
+        </p>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:28px;">
+          <span class="er-badge er-badge-emerald">✓ RAG-powered search</span>
+          <span class="er-badge er-badge-purple">✓ Plot summaries</span>
+          <span class="er-badge er-badge-gold">✓ Mood-based picks</span>
+        </div>
+        <a href="novia.html" class="er-btn er-btn-teal">Chat with Novia →</a>
+      </div>
+      <div class="novia-chat-preview">
+        <div class="novia-msg ai">👋 Hi! I'm Novia. Ask me for book recommendations, plot summaries, or anything literary!</div>
+        <div class="novia-msg user">Show me the best sci-fi novels available</div>
+        <div class="novia-msg ai">📚 Great choice! Here are some top sci-fi picks from our catalog: <strong>Dune, Foundation, Neuromancer</strong>… Want me to add any to your cart?</div>
+        <div class="novia-typing"><span></span><span></span><span></span></div>
+      </div>
+    </div>
+  </section>
 
-            // Session: show user name if signed in
-            try {
-                const u = JSON.parse(localStorage.getItem('echoreads_user') || 'null');
-                const pill = document.getElementById('user-pill');
-                const sign = document.getElementById('signin-link');
-                const signout = document.getElementById('signout-btn');
-                if (u && u.name && pill && sign && signout) {
-                    pill.textContent = `Signed in as ${u.name}`; pill.classList.remove('hidden');
-                    sign.classList.add('hidden');
-                    signout.classList.remove('hidden');
-                }
-            } catch {}
+  <!-- ── HOW IT WORKS ──────────────────────────────────── -->
+  <section style="padding:80px 32px;max-width:1280px;margin:0 auto;">
+    <div class="er-reveal" style="text-align:center;margin-bottom:56px;">
+      <h2 class="er-section-title">How EchoReads Works</h2>
+      <p class="er-section-subtitle" style="margin:12px auto 0;">From discovery to listening — in three steps.</p>
+    </div>
+    <div class="how-grid">
+      <div class="how-step er-reveal er-reveal-delay-1">
+        <span class="how-step-num">01</span>
+        <h3>Discover</h3>
+        <p>Browse by genre, search by title, or let Novia AI suggest books tailored to your mood and preferences.</p>
+      </div>
+      <div class="how-step er-reveal er-reveal-delay-2">
+        <span class="how-step-num">02</span>
+        <h3>Purchase</h3>
+        <p>Unlock full access to any book with our secure Stripe checkout. Your library lives in the cloud — forever.</p>
+      </div>
+      <div class="how-step er-reveal er-reveal-delay-3">
+        <span class="how-step-num">03</span>
+        <h3>Read & Listen</h3>
+        <p>Read in our beautiful e-book reader with Light, Dark, or Sepia modes. Or hit play for TTS narration with word-by-word highlighting.</p>
+      </div>
+    </div>
+  </section>
 
-            // Sign out functionality
-            document.getElementById('signout-btn').addEventListener('click', function() {
-                localStorage.removeItem('echoreads_user');
-                localStorage.removeItem('echoreads_token');
-                location.reload();
-            });
-        });
-    </script>
+  <!-- ── GENRE PREVIEW ────────────────────────────────── -->
+  <section style="padding:0 32px 80px;max-width:1280px;margin:0 auto;">
+    <div class="er-reveal" style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px;">
+      <h2 class="er-section-title">Browse by Genre</h2>
+      <a href="genres.html" class="er-btn er-btn-outline er-btn-sm">All Genres →</a>
+    </div>
+    <div class="genre-pills er-reveal er-reveal-delay-1">
+      <a href="browse.html?genre=Fiction"         class="genre-pill">📖 Fiction</a>
+      <a href="browse.html?genre=Science+Fiction"  class="genre-pill">🚀 Science Fiction</a>
+      <a href="browse.html?genre=Mystery"          class="genre-pill">🔍 Mystery</a>
+      <a href="browse.html?genre=Romance"          class="genre-pill">💕 Romance</a>
+      <a href="browse.html?genre=Thriller"         class="genre-pill">⚡ Thriller</a>
+      <a href="browse.html?genre=Horror"           class="genre-pill">👻 Horror</a>
+      <a href="browse.html?genre=Fantasy"          class="genre-pill">🧙 Fantasy</a>
+      <a href="browse.html?genre=Biography"        class="genre-pill">🏆 Biography</a>
+      <a href="browse.html?genre=Self-Help"        class="genre-pill">🌱 Self-Help</a>
+      <a href="browse.html?genre=History"          class="genre-pill">🏛️ History</a>
+      <a href="browse.html?genre=Non-Fiction"      class="genre-pill">📰 Non-Fiction</a>
+      <a href="browse.html?genre=Children"         class="genre-pill">🎈 Children</a>
+    </div>
+  </section>
+
+  <!-- ── BOTTOM CTA ────────────────────────────────────── -->
+  <section class="cta-section er-reveal">
+    <div class="er-badge er-badge-gold" style="margin:0 auto 20px;display:inline-flex;">Free to start • No credit card required</div>
+    <h2>Ready to Start Reading?</h2>
+    <p style="color:var(--color-text-secondary);max-width:480px;margin:12px auto 36px;font-size:.95rem;line-height:1.75;">
+      Join thousands of readers already exploring their next favorite book on EchoReads.
+    </p>
+    <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
+      <a href="signin.html" class="er-btn er-btn-primary er-btn-lg">Create Free Account</a>
+      <a href="browse.html" class="er-btn er-btn-outline er-btn-lg">Browse the Library</a>
+    </div>
+  </section>
+
+</div>
+
+<!-- Book Details Modal Viewport -->
+<div id="book-details-modal" class="relative z-50"></div>
+
+<script src="js/main.js"></script>
+<script>
+  function goSearch() {
+    const q = document.getElementById('hero-search').value.trim();
+    if (q) window.location.href = `search.html?q=${encodeURIComponent(q)}`;
+  }
+  document.getElementById('hero-search')?.addEventListener('keypress', e => {
+    if (e.key === 'Enter') goSearch();
+  });
+
+  // Load featured books
+  async function loadFeaturedBooks() {
+    try {
+      const res = await fetch('/api/books?limit=10');
+      const data = await res.json();
+      const books = (data.data || []).sort((a,b) => (b.rating||0) - (a.rating||0)).slice(0, 10);
+      if (!books.length) return;
+
+      document.getElementById('featured-books').innerHTML = books.map(b => `
+        <div class="er-book-card" style="flex:0 0 180px;cursor:pointer;" onclick="showBookDetails('${b._id}')">
+          <img src="${b.imageUrl || 'https://placehold.co/180x240/0d0d1f/fff?text=Book'}" alt="${b.title}" />
+          <div class="er-book-card-body">
+            <div class="er-stars" style="font-size:.7rem;margin-bottom:6px">${'★'.repeat(Math.round(b.rating||4))}</div>
+            <h4 style="font-size:.82rem;font-weight:700;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${b.title}</h4>
+            <p style="font-size:.72rem;color:var(--color-text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${b.author}</p>
+            <p style="font-size:.82rem;font-weight:700;color:var(--color-gold);margin-top:8px;">$${(b.price||0).toFixed(2)}</p>
+          </div>
+        </div>
+      `).join('');
+    } catch(e) { /* keep skeletons */ }
+  }
+
+  // Marquee
+  function buildMarquee() {
+    const items = [
+      'AI Book Recommendations','TTS Audiobook Reader','Secure Stripe Checkout',
+      'Offline Reading','Smart Genre Filters','Cloud Library','Gemini 2.5 Flash AI',
+      '500+ Books','Real-time Search','Dark & Sepia Modes'
+    ];
+    const doubled = [...items, ...items];
+    document.getElementById('er-marquee').innerHTML = doubled.map(i =>
+      `<div class="er-marquee-item"><span class="dot"></span>${i}</div>`
+    ).join('');
+  }
+
+  buildMarquee();
+  loadFeaturedBooks();
+</script>
 </body>
 </html>

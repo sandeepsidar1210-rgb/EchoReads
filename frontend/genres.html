@@ -3,66 +3,234 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Genres - EchoReads</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>body{background:radial-gradient(at 70% 30%, #171730, #0a0a1a);color:#e2e8f0;font-family:Inter,system-ui,sans-serif}</style>
+  <title>Explore Genres — EchoReads</title>
+  <meta name="description" content="Browse all book genres on EchoReads. From Fiction and Sci-Fi to Romance and Thriller — find your perfect read." />
+  <link rel="stylesheet" href="css/shared.css" />
+  <script src="js/shared.js" defer></script>
+  <style>
+    .genres-hero {
+      padding: 60px 32px 48px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .genres-hero .er-orb { width:350px;height:350px;opacity:.25; }
+
+    .genre-filter-bar {
+      max-width: 480px;
+      margin: 0 auto 48px;
+      display: flex;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+      transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    }
+    .genre-filter-bar:focus-within {
+      border-color: var(--color-teal);
+      box-shadow: 0 0 0 3px rgba(34,211,238,0.1);
+    }
+    .genre-filter-bar input {
+      flex: 1; background: transparent; border: none; outline: none;
+      padding: 13px 20px; color: var(--color-text-primary);
+      font-size: 0.875rem; font-family: 'Inter', sans-serif;
+    }
+    .genre-filter-bar input::placeholder { color: var(--color-text-muted); }
+    .genre-filter-bar span { padding: 0 20px; display:flex;align-items:center;color:var(--color-text-muted); }
+
+    /* Genre grid */
+    .genres-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 20px;
+    }
+
+    .genre-card {
+      position: relative;
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--color-border);
+      padding: 32px 24px;
+      background: var(--color-bg-card);
+      cursor: pointer;
+      overflow: hidden;
+      transition: transform var(--transition-base), border-color var(--transition-base), box-shadow var(--transition-base);
+      text-decoration: none;
+      display: block;
+    }
+    .genre-card::before {
+      content:'';
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity var(--transition-base);
+    }
+    .genre-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-card-hover); }
+    .genre-card:hover::before { opacity: 1; }
+    .genre-card:hover .genre-icon { transform: scale(1.15); }
+
+    .genre-icon {
+      font-size: 2.8rem;
+      margin-bottom: 16px;
+      display: block;
+      transition: transform var(--transition-base);
+    }
+    .genre-name {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: var(--color-text-primary);
+    }
+    .genre-sub {
+      font-size: 0.78rem;
+      color: var(--color-text-secondary);
+    }
+    .genre-count {
+      position: absolute;
+      top: 16px; right: 16px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: var(--radius-full);
+    }
+
+    /* Genre-specific accent colors via data attribute */
+    .genre-card[data-color="teal"]   { --gc: rgba(34,211,238,0.08); --gc-border: rgba(34,211,238,0.3); --gc-text: var(--color-teal); }
+    .genre-card[data-color="gold"]   { --gc: rgba(245,183,49,0.08);  --gc-border: rgba(245,183,49,0.3);  --gc-text: var(--color-gold); }
+    .genre-card[data-color="purple"] { --gc: rgba(139,92,246,0.08); --gc-border: rgba(139,92,246,0.3); --gc-text: var(--color-purple); }
+    .genre-card[data-color="rose"]   { --gc: rgba(244,63,94,0.08);  --gc-border: rgba(244,63,94,0.3);  --gc-text: var(--color-rose); }
+    .genre-card[data-color="emerald"]{ --gc: rgba(16,185,129,0.08); --gc-border: rgba(16,185,129,0.3); --gc-text: var(--color-emerald); }
+    .genre-card[data-color="indigo"] { --gc: rgba(99,102,241,0.08); --gc-border: rgba(99,102,241,0.3); --gc-text: var(--color-indigo); }
+    .genre-card[data-color="orange"] { --gc: rgba(249,115,22,0.08); --gc-border: rgba(249,115,22,0.3); --gc-text: #f97316; }
+    .genre-card[data-color="pink"]   { --gc: rgba(236,72,153,0.08); --gc-border: rgba(236,72,153,0.3); --gc-text: #ec4899; }
+    .genre-card[data-color="sky"]    { --gc: rgba(14,165,233,0.08); --gc-border: rgba(14,165,233,0.3); --gc-text: #0ea5e9; }
+    .genre-card[data-color="lime"]   { --gc: rgba(132,204,22,0.08); --gc-border: rgba(132,204,22,0.3);  --gc-text: #84cc16; }
+
+    .genre-card::before { background: var(--gc); }
+    .genre-card:hover { border-color: var(--gc-border); }
+    .genre-count { background: var(--gc); color: var(--gc-text); border: 1px solid var(--gc-border); }
+    .genre-name  { color: var(--color-text-primary); }
+
+    #genre-empty {
+      display: none;
+      text-align: center;
+      padding: 80px 24px;
+      color: var(--color-text-secondary);
+    }
+
+    @media (max-width: 640px) {
+      .genres-grid { grid-template-columns: repeat(2, 1fr); }
+      .genres-hero { padding: 40px 20px 32px; }
+    }
+  </style>
 </head>
-<body class="min-h-screen">
-  <header class="border-b border-slate-800/80 bg-slate-900/40 sticky top-0 z-40">
-    <div class="container mx-auto px-6 py-4 flex items-center justify-between">
-      <div class="flex items-center space-x-4">
-        <button onclick="window.location.href='index.html'" class="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded">Back to Home Page</button>
-        <a href="index.html" class="text-2xl font-bold text-amber-400">Echo<span class="text-white">Reads</span></a>
+<body>
+<div class="er-page">
+
+  <!-- Hero -->
+  <section class="genres-hero">
+    <div class="er-orb er-orb-teal" style="top:-100px;left:-80px;"></div>
+    <div class="er-orb er-orb-gold" style="bottom:-80px;right:-60px;"></div>
+    <div style="position:relative;z-index:2;">
+      <div class="er-badge er-badge-teal er-reveal" style="margin:0 auto 16px;display:inline-flex;">📚 12 Genre Categories</div>
+      <h1 class="er-section-title er-reveal er-reveal-delay-1" style="margin-bottom:12px;">Explore Genres</h1>
+      <p style="color:var(--color-text-secondary);font-size:.95rem;margin-bottom:36px;" class="er-reveal er-reveal-delay-2">
+        Find your perfect read across every category imaginable.
+      </p>
+
+      <!-- Filter bar -->
+      <div class="genre-filter-bar er-reveal er-reveal-delay-3">
+        <span>🔍</span>
+        <input type="text" id="genre-filter" placeholder="Filter genres…" oninput="filterGenres(this.value)" />
       </div>
-      <nav class="space-x-6 text-gray-300">
-        <a class="hover:text-white" href="browse.html">Browse</a>
-        <a class="text-indigo-400" href="genres.html">Genres</a>
-        <a class="hover:text-white" href="cart.html">Cart</a>
-        <a class="hover:text-white" href="novia.html">Novia</a>
-        <button id="signout-btn" class="hidden px-4 py-2 rounded border border-red-500 text-red-400 hover:bg-red-600 hover:text-white transition">Sign Out</button>
-      </nav>
     </div>
-  </header>
-  <main class="container mx-auto px-6 py-10">
-    <h1 class="text-4xl font-extrabold text-white mb-6">Explore Genres</h1>
-    <div id="genre-list" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6"></div>
-  </main>
-  <script>
-    const token = localStorage.getItem('echoreads_token');
-    if (!token) {
-        window.location.href = 'signin.html';
-    }
-    const API='/api/books/genres';
-    const FALLBACK=['Fantasy','Science Fiction','Mystery','Romance','Thriller','Horror','Biography','History','Self-Help','Non-Fiction'];
-    async function load(){
-      let genres = [];
-      try { const res=await fetch(API, { headers: { 'Authorization': `Bearer ${token}` } }); const data=await res.json(); if (data.success) genres = data.data; } catch {}
-      if (!Array.isArray(genres) || !genres.length) genres = FALLBACK;
-      const list=document.getElementById('genre-list');
-      list.innerHTML=(genres).map(g=>`
-        <a href="browse.html?genre=${encodeURIComponent(g)}" class="p-6 rounded-xl bg-slate-800/70 hover:bg-slate-700/80 transition block text-center">
-          <div class="text-xl font-semibold text-white">${g}</div>
-          <div class="text-sm text-gray-400 mt-1">Browse ${g}</div>
+  </section>
+
+  <!-- Grid -->
+  <section style="padding:0 32px 80px;max-width:1280px;margin:0 auto;">
+    <div id="genres-grid" class="genres-grid"></div>
+    <div id="genre-empty">
+      <p style="font-size:3rem;margin-bottom:12px">🔍</p>
+      <p style="font-size:1rem;font-weight:600;color:var(--color-text-primary);">No genres found</p>
+      <p style="font-size:.85rem;margin-top:6px;">Try a different search term.</p>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  const GENRE_META = {
+    'Fiction':         { icon:'📖', color:'teal',    desc:'Stories that transport you' },
+    'Non-Fiction':     { icon:'📰', color:'gold',    desc:'Real stories, real impact' },
+    'Science Fiction': { icon:'🚀', color:'purple',  desc:'Explore the future universe' },
+    'Mystery':         { icon:'🔍', color:'indigo',  desc:'Every clue counts' },
+    'Romance':         { icon:'💕', color:'pink',    desc:'Love stories for every heart' },
+    'Thriller':        { icon:'⚡', color:'rose',    desc:'Edge-of-your-seat tension' },
+    'Horror':          { icon:'👻', color:'rose',    desc:'Face your darkest fears' },
+    'Fantasy':         { icon:'🧙', color:'purple',  desc:'Magical worlds await' },
+    'Biography':       { icon:'🏆', color:'gold',    desc:'Lives worth knowing' },
+    'History':         { icon:'🏛️', color:'orange',  desc:'The past shapes us all' },
+    'Self-Help':       { icon:'🌱', color:'emerald', desc:'Grow into your best self' },
+    'Children':        { icon:'🎈', color:'sky',     desc:'Wonder for young minds' },
+    'Adventure':       { icon:'🗺️', color:'lime',    desc:'Journeys beyond the horizon' },
+    'Philosophy':      { icon:'💭', color:'indigo',  desc:'Questions that matter most' },
+    'Science':         { icon:'🔬', color:'teal',    desc:'Discover how our world works' },
+    'Poetry':          { icon:'✍️', color:'pink',    desc:'Words that move the soul' },
+  };
+  const FALLBACK_GENRES = Object.keys(GENRE_META);
+
+  let allGenres = [];
+
+  function renderGenres(list) {
+    const grid = document.getElementById('genres-grid');
+    const empty = document.getElementById('genre-empty');
+    if (!list.length) { grid.innerHTML=''; empty.style.display='block'; return; }
+    empty.style.display='none';
+    grid.innerHTML = list.map((g, i) => {
+      const meta = GENRE_META[g] || { icon:'📚', color:'teal', desc:`Browse ${g}` };
+      return `
+        <a href="browse.html?genre=${encodeURIComponent(g)}"
+           class="genre-card er-reveal er-reveal-delay-${(i % 5)+1}"
+           data-color="${meta.color}" data-genre="${g.toLowerCase()}">
+          <span class="genre-count">Popular</span>
+          <span class="genre-icon">${meta.icon}</span>
+          <div class="genre-name">${g}</div>
+          <div class="genre-sub">${meta.desc}</div>
         </a>
-      `).join('');
+      `;
+    }).join('');
+
+    // Re-trigger scroll reveal for new elements
+    if (window.erInitScrollReveal) window.erInitScrollReveal();
+    else {
+      const els = document.querySelectorAll('.er-reveal:not(.visible)');
+      const io = new IntersectionObserver(entries => {
+        entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('visible'); io.unobserve(e.target); } });
+      }, { threshold: 0.08 });
+      els.forEach(el => io.observe(el));
     }
-    load();
+  }
 
-    // Show sign out if signed in
+  function filterGenres(q) {
+    const filtered = allGenres.filter(g => g.toLowerCase().includes(q.toLowerCase()));
+    renderGenres(filtered);
+  }
+
+  async function loadGenres() {
+    const token = localStorage.getItem('echoreads_token');
     try {
-        const u = JSON.parse(localStorage.getItem('echoreads_user') || 'null');
-        const signout = document.getElementById('signout-btn');
-        if (u && signout) {
-            signout.classList.remove('hidden');
-        }
-    } catch {}
+      const res = await fetch('/api/books/genres', {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      });
+      const data = await res.json();
+      if (data.success && data.data?.length) {
+        allGenres = data.data;
+      } else { allGenres = FALLBACK_GENRES; }
+    } catch { allGenres = FALLBACK_GENRES; }
+    renderGenres(allGenres);
+  }
 
-    // Sign out functionality
-    document.getElementById('signout-btn').addEventListener('click', function() {
-        localStorage.removeItem('echoreads_user');
-        localStorage.removeItem('echoreads_token');
-        window.location.href = 'index.html';
-    });
-  </script>
+  loadGenres();
+</script>
 </body>
 </html>

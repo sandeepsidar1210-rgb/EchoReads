@@ -3,31 +3,122 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Novia AI - EchoReads</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Novia AI Assistant — EchoReads</title>
+  <meta name="description" content="Chat with Novia, your AI-powered literary assistant. Get personalized book recommendations powered by Gemini 2.5 Flash." />
+  <link rel="stylesheet" href="css/shared.css" />
+  <script src="js/shared.js" defer></script>
   <style>
-    body {
-      background: radial-gradient(at 70% 30%, #111827, #030712);
-      color: #e5e7eb;
-      font-family: 'Inter', system-ui, sans-serif;
+    .chat-bubble-ai {
+      background: rgba(34,211,238,0.08);
+      border: 1px solid rgba(34,211,238,0.2);
+      border-radius: 18px 18px 18px 4px;
+      padding: 14px 18px;
+      max-width: 80%;
+      font-size: 0.875rem;
+      line-height: 1.7;
+      color: var(--color-text-primary);
     }
-    .glass {
-      background: rgba(17, 24, 39, 0.7);
-      backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+    .chat-bubble-user {
+      background: rgba(245,183,49,0.12);
+      border: 1px solid rgba(245,183,49,0.22);
+      border-radius: 18px 18px 4px 18px;
+      padding: 14px 18px;
+      max-width: 80%;
+      font-size: 0.875rem;
+      line-height: 1.7;
+      align-self: flex-end;
+      color: var(--color-text-primary);
     }
-    .glow-border {
-      position: relative;
+    .typing-dot {
+      width: 7px; height: 7px;
+      background: var(--color-teal);
+      border-radius: 50%;
+      animation: typing-bounce 1.2s infinite;
     }
-    .glow-border::after {
-      content: '';
-      position: absolute;
-      inset: -1px;
-      background: linear-gradient(90deg, #06b6d4, #10b981);
-      border-radius: inherit;
-      z-index: -1;
-      opacity: 0.3;
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typing-bounce {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+      30% { transform: translateY(-7px); opacity: 1; }
     }
+    .chat-container {
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 160px);
+      max-height: 780px;
+    }
+    .chat-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--color-border);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: rgba(34,211,238,0.04);
+    }
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      scrollbar-width: thin;
+    }
+    .chat-input-wrap {
+      padding: 16px 20px;
+      border-top: 1px solid var(--color-border);
+      display: flex;
+      gap: 10px;
+      background: rgba(5,5,15,0.5);
+    }
+    .chat-send-btn {
+      padding: 11px 20px;
+      background: var(--gradient-teal);
+      color: #000;
+      font-weight: 700;
+      font-size: 0.85rem;
+      border-radius: var(--radius-full);
+      border: none;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: filter var(--transition-fast), transform var(--transition-fast);
+    }
+    .chat-send-btn:hover { filter: brightness(1.1); transform: scale(1.03); }
+    .quick-chip {
+      padding: 7px 16px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-full);
+      font-size: 0.78rem;
+      color: var(--color-text-secondary);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      white-space: nowrap;
+    }
+    .quick-chip:hover {
+      background: rgba(34,211,238,0.1);
+      border-color: rgba(34,211,238,0.3);
+      color: var(--color-teal);
+    }
+    .novia-avatar {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #06b6d4, #10b981);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem;
+      flex-shrink: 0;
+    }
+    .online-dot {
+      width: 9px; height: 9px;
+      background: var(--color-emerald);
+      border-radius: 50%;
+      animation: blink 2s infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
     /* Scrollbar Styling */
     ::-webkit-scrollbar {
       width: 6px;
@@ -45,67 +136,58 @@
   </style>
   <script src="js/main.js"></script>
 </head>
-<body class="min-h-screen flex flex-col">
-  <!-- Interactive Header -->
-  <header class="sticky top-0 z-40 bg-gray-900/80 backdrop-blur-md border-b border-gray-800/80">
-    <div class="container mx-auto px-6 py-4 flex items-center justify-between">
-      <div class="flex items-center space-x-4">
-        <button onclick="window.location.href='index.html'" class="bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 px-4 py-2 rounded-full text-sm font-medium transition">
-          ← Back to Home
-        </button>
-        <a href="index.html" class="text-2xl font-bold tracking-tight"><span class="text-emerald-400">Echo</span><span class="text-white">Reads</span></a>
-      </div>
-      <nav class="space-x-6 text-gray-400 font-medium">
-        <a class="hover:text-white transition" href="browse.html">Browse</a>
-        <a class="hover:text-white transition" href="genres.html">Genres</a>
-        <a class="text-emerald-400 font-semibold" href="novia.html">Novia AI</a>
-      </nav>
-    </div>
-  </header>
+<body>
+<div class="er-page">
 
   <!-- Main Chat Section -->
-  <main class="container mx-auto px-6 py-8 flex-1 flex flex-col justify-center max-w-4xl">
-    <div class="w-full glass rounded-3xl p-6 shadow-2xl flex flex-col flex-1 max-h-[80vh] glow-border">
-      
-      <!-- Top Title Bar -->
-      <div class="flex items-center gap-4 pb-4 border-b border-gray-850 border-gray-800/50 mb-4">
-        <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-500 to-emerald-400 grid place-items-center text-xl font-bold text-gray-900 shadow-lg shadow-emerald-500/20">
-          🤖
-        </div>
+  <main style="padding: 24px 32px 40px; max-width: 900px; margin: 0 auto; flex:1; display:flex; flex-direction:column;">
+    <!-- Page title -->
+    <div style="margin-bottom: 20px;">
+      <div class="er-badge er-badge-teal" style="margin-bottom:10px;display:inline-flex;">🤖 Powered by Gemini 2.5 Flash</div>
+      <h1 style="font-family:'Space Grotesk',sans-serif;font-size:1.8rem;font-weight:900;margin-bottom:4px;">Novia <span class="text-gradient-teal">AI</span> Assistant</h1>
+      <p style="color:var(--color-text-secondary);font-size:.85rem;">Ask me about books, get recommendations, or explore genres.</p>
+    </div>
+
+    <div class="chat-container" style="flex:1;">
+      <!-- Chat Header -->
+      <div class="chat-header">
+        <div class="novia-avatar">🤖</div>
         <div>
-          <h1 class="text-xl font-extrabold tracking-wide text-white">Novia AI</h1>
-          <p class="text-xs text-cyan-400 flex items-center gap-1">
-            <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span> EchoReads Smart Assistant
-          </p>
+          <div style="font-weight:700;font-size:.95rem;">Novia AI</div>
+          <div style="font-size:.75rem;color:var(--color-text-secondary);">EchoReads Smart Literary Assistant</div>
         </div>
-        <span class="ml-auto text-xs px-3 py-1 rounded-full bg-cyan-950/60 border border-cyan-800/50 text-cyan-300 font-semibold">Online</span>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+          <div class="online-dot"></div>
+          <span style="font-size:.75rem;color:var(--color-emerald);font-weight:600;">Online</span>
+        </div>
       </div>
 
       <!-- Quick prompts -->
-      <div class="mb-4 flex flex-wrap gap-2 text-xs">
-        <button class="px-3 py-1.5 rounded-full bg-gray-800/60 border border-gray-700/50 text-gray-300 hover:border-emerald-400/50 hover:bg-emerald-950/20 transition" data-prompt="recommend a classic horror novel">Recommend Horror</button>
-        <button class="px-3 py-1.5 rounded-full bg-gray-800/60 border border-gray-700/50 text-gray-300 hover:border-emerald-400/50 hover:bg-emerald-950/20 transition" data-prompt="suggest a romance book with high rating">High-Rated Romance</button>
-        <button class="px-3 py-1.5 rounded-full bg-gray-800/60 border border-gray-700/50 text-gray-300 hover:border-emerald-400/50 hover:bg-emerald-950/20 transition" data-prompt="recommend science fiction books in your catalog">Suggest Sci-Fi</button>
-        <button class="px-3 py-1.5 rounded-full bg-gray-800/60 border border-gray-700/50 text-gray-300 hover:border-emerald-400/50 hover:bg-emerald-950/20 transition" data-prompt="give me a popular book suggestion">Popular Books</button>
+      <div style="padding:12px 20px;border-bottom:1px solid var(--color-border);display:flex;flex-wrap:wrap;gap:8px;">
+        <button class="quick-chip" data-prompt="recommend a classic horror novel">👻 Recommend Horror</button>
+        <button class="quick-chip" data-prompt="suggest a romance book with high rating">💕 High-Rated Romance</button>
+        <button class="quick-chip" data-prompt="recommend science fiction books in your catalog">🚀 Suggest Sci-Fi</button>
+        <button class="quick-chip" data-prompt="give me a popular book suggestion">⭐ Popular Books</button>
+        <button class="quick-chip" data-prompt="what mystery books do you have?">🔍 Mystery</button>
       </div>
 
       <!-- Messages Area -->
-      <div id="messages" class="flex-1 overflow-y-auto space-y-4 p-4 bg-gray-950/40 rounded-2xl border border-gray-800/60 min-h-[300px]"></div>
-      
+      <div id="messages" class="chat-messages"></div>
+
       <!-- Typing indicator -->
-      <div id="typing" class="hidden text-xs text-gray-400 mt-2 ml-2 flex items-center gap-1.5">
-        <span class="flex space-x-1">
-          <span class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></span>
-          <span class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></span>
-          <span class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.3s"></span>
-        </span>
-        Novia is typing...
+      <div id="typing" style="display:none;padding:0 24px 12px;align-items:center;gap:8px;">
+        <div class="novia-avatar" style="width:28px;height:28px;font-size:.8rem;">🤖</div>
+        <div style="display:flex;gap:5px;align-items:center;padding:10px 14px;background:rgba(34,211,238,0.08);border:1px solid rgba(34,211,238,0.2);border-radius:12px;">
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+        </div>
       </div>
 
       <!-- Input controls -->
-      <div class="mt-4 flex gap-2">
-        <input id="input" class="flex-1 bg-gray-800/60 border border-gray-700 text-sm rounded-xl px-4 py-3 text-white outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 transition" placeholder="Ask about plot summaries, recommendations, or genres..." />
-        <button id="send" class="px-6 py-3 bg-gradient-to-r from-cyan-600 to-emerald-600 font-semibold text-sm text-white rounded-xl hover:from-cyan-500 hover:to-emerald-500 transition shadow-lg shadow-emerald-950/40">Send</button>
+      <div class="chat-input-wrap">
+        <input id="input" class="er-input" style="border-radius:var(--radius-full);" placeholder="Ask about books, genres, authors…" />
+        <button id="send" class="chat-send-btn">Send ↑</button>
       </div>
     </div>
   </main>
@@ -127,22 +209,15 @@
     // Creates chat speech bubble containing text
     function bubble(text, isUser = false) {
       const row = document.createElement('div');
-      row.className = `flex ${isUser ? 'justify-end' : 'justify-start'}`;
+      row.style.cssText = `display:flex;justify-content:${isUser ? 'flex-end' : 'flex-start'};`;
 
       const cardContainer = document.createElement('div');
-      cardContainer.className = 'flex flex-col space-y-2 max-w-[80%]';
+      cardContainer.style.cssText = 'display:flex;flex-direction:column;gap:10px;max-width:80%;';
 
       const bubbleBox = document.createElement('div');
-      bubbleBox.className = `${
-        isUser 
-          ? 'bg-gradient-to-tr from-cyan-600 to-emerald-600 text-white rounded-t-2xl rounded-bl-2xl' 
-          : 'bg-gray-800 text-gray-100 rounded-t-2xl rounded-br-2xl border border-gray-700/40'
-      } px-4 py-3 shadow-md text-sm leading-relaxed whitespace-pre-line`;
-      
-      // Parse markdown bold blocks (**text**) for a polished look
+      bubbleBox.className = isUser ? 'chat-bubble-user' : 'chat-bubble-ai';
+
       let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-      
-      // 1. Parse book tags: [BookID: xxxxxxxx]
       const { cleanText, bookIds } = parseBookTags(formattedText);
       bubbleBox.innerHTML = cleanText;
 
@@ -151,11 +226,8 @@
       messages.appendChild(row);
       messages.scrollTop = messages.scrollHeight;
 
-      // 2. Fetch and render rich details cards for any detected book IDs
       if (!isUser && bookIds && bookIds.length > 0) {
-        bookIds.forEach(id => {
-          renderInlineBookCard(id, cardContainer);
-        });
+        bookIds.forEach(id => renderInlineBookCard(id, cardContainer));
       }
     }
 
@@ -181,21 +253,21 @@
         if (json.success && json.data) {
           const book = json.data;
           const card = document.createElement('div');
-          card.className = 'flex items-center gap-3 p-3 bg-gray-900/60 border border-gray-700/60 hover:border-emerald-400/50 rounded-2xl max-w-sm transition duration-300';
+          card.style.cssText = 'display:flex;align-items:center;gap:12px;padding:12px;background:rgba(34,211,238,0.06);border:1px solid rgba(34,211,238,0.2);border-radius:14px;max-width:320px;transition:border-color 0.2s;';
+          card.onmouseenter = () => card.style.borderColor = 'rgba(34,211,238,0.5)';
+          card.onmouseleave = () => card.style.borderColor = 'rgba(34,211,238,0.2)';
           card.innerHTML = `
-            <img src="${book.imageUrl}" class="w-10 h-14 object-cover rounded shadow-md flex-shrink-0" />
-            <div class="flex-1 min-w-0">
-              <h4 class="text-xs font-semibold text-white truncate">${book.title}</h4>
-              <p class="text-[10px] text-gray-400 truncate">by ${book.author}</p>
-              <div class="flex items-center gap-1.5 mt-1 text-[10px]">
-                <span class="text-amber-400">★</span>
-                <span class="text-gray-300">${book.rating}</span>
-                <span class="text-gray-500">•</span>
-                <span class="text-emerald-400 font-semibold">$${book.price.toFixed(2)}</span>
+            <img src="${book.imageUrl}" style="width:40px;height:56px;object-fit:cover;border-radius:6px;flex-shrink:0;" />
+            <div style="flex:1;min-width:0;">
+              <h4 style="font-size:.8rem;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px;">${book.title}</h4>
+              <p style="font-size:.72rem;color:var(--color-text-secondary);margin-bottom:6px;">by ${book.author}</p>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="color:var(--color-gold);font-size:.72rem;">★ ${book.rating}</span>
+                <span style="color:var(--color-emerald);font-size:.78rem;font-weight:700;">$${book.price.toFixed(2)}</span>
               </div>
             </div>
-            <button onclick="showBookDetails('${book._id}')" class="px-2.5 py-1.5 bg-gray-800 hover:bg-emerald-600 text-gray-300 hover:text-white rounded-lg text-[10px] font-semibold tracking-wider transition">
-              VIEW
+            <button onclick="showBookDetails('${book._id}')" style="padding:6px 12px;background:var(--gradient-teal);color:#000;border:none;border-radius:20px;font-size:.72rem;font-weight:700;cursor:pointer;white-space:nowrap;">
+              View
             </button>
           `;
           container.appendChild(card);
@@ -211,7 +283,7 @@
       if (!text) return;
       input.value = '';
       bubble(text, true);
-      typing.classList.remove('hidden');
+      typing.style.display = 'flex';
 
       try {
         const res = await fetch(API, {
@@ -223,10 +295,10 @@
           body: JSON.stringify({ message: text })
         });
         const data = await res.json();
-        typing.classList.add('hidden');
+        typing.style.display = 'none';
         bubble(data.response || 'Sorry, I couldn\'t process that request.');
       } catch {
-        typing.classList.add('hidden');
+        typing.style.display = 'none';
         bubble('I encountered an error connecting to Novia. Please try again.');
       }
     }
@@ -239,8 +311,9 @@
       btn.onclick = () => send(btn.dataset.prompt);
     });
 
-    bubble("Hi! I'm Novia. Ask me about plot summaries, character analyses, or requests like 'show me high rated romance books'. I will recommend titles straight from the EchoReads shelf!");
+    bubble("Hi! I'm Novia \ud83d\udc4b\u2014 your AI literary guide. Ask me for book recommendations, plot summaries, or say things like 'best horror novels' or 'show me romance books under $10'. I'll search our catalog and suggest the perfect read!");
   </script>
+</div>
 </body>
 </html>
 
