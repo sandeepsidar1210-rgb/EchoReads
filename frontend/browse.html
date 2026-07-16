@@ -1,416 +1,385 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Browse Books - EchoReads</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background: radial-gradient(at 70% 30%, #171730, #0a0a1a);
-            min-height: 100vh;
-            color: #e2e8f0;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Browse Books — EchoReads</title>
+  <meta name="description" content="Browse our full catalog of e-books on EchoReads. Filter by genre, sort by rating, and find your next favorite read." />
+  <link rel="stylesheet" href="css/shared.css" />
+  <script src="js/shared.js" defer></script>
+  <style>
+    /* ── Browse-specific styles ─────────────── */
+    .genre-filter-btn {
+      padding: 8px 18px;
+      border-radius: var(--radius-full);
+      font-size: 0.8rem;
+      font-weight: 600;
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
+      color: var(--color-text-secondary);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      white-space: nowrap;
+    }
+    .genre-filter-btn:hover {
+      background: rgba(34,211,238,0.1);
+      border-color: rgba(34,211,238,0.35);
+      color: var(--color-teal);
+    }
+    .genre-filter-btn.active {
+      background: rgba(34,211,238,0.15);
+      border-color: rgba(34,211,238,0.5);
+      color: var(--color-teal);
+    }
 
-        .book-card {
-            transition: transform 0.3s ease;
-        }
+    .sort-select {
+      padding: 9px 14px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      color: var(--color-text-primary);
+      font-size: 0.82rem;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      cursor: pointer;
+    }
+    .sort-select:focus { border-color: var(--color-teal); }
 
-        .book-card:hover {
-            transform: translateY(-5px);
-        }
+    /* Book cards */
+    .browse-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 24px;
+    }
 
-        .genre-filter.active {
-            background-color: #14b8a6;
-            color: white;
-        }
-    </style>
+    .browse-book-card {
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
+    }
+    .browse-book-card:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-card-hover);
+      border-color: var(--color-border-hover);
+    }
+    .browse-book-card img {
+      width: 100%; height: 260px;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+    }
+    .browse-book-card:hover img { transform: scale(1.04); }
+    .browse-book-card-body { padding: 18px; }
+
+    /* Modal */
+    .er-modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.75);
+      z-index: 3000;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+    }
+    .er-modal-box {
+      background: #0d0d1f;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl);
+      max-width: 860px; width: 100%;
+      max-height: 90vh; overflow-y: auto;
+      padding: 36px;
+      position: relative;
+    }
+    .er-modal-close {
+      position: absolute; top: 16px; right: 16px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      color: var(--color-text-primary);
+      border-radius: var(--radius-sm);
+      padding: 6px 12px; font-size: 1rem; cursor: pointer;
+    }
+  </style>
 </head>
 <body>
-    <!-- Header -->
-    <header class="fixed top-0 left-0 right-0 z-50 bg-opacity-95 bg-gray-900">
-        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <div class="flex items-center space-x-4">
-                <button onclick="window.location.href='index.html'" class="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded">Back to Home Page</button>
-                <a href="index.html" class="text-3xl font-bold">
-                    <span class="text-amber-500">Echo</span><span class="text-white">Reads</span>
-                </a>
-            </div>
-            <div class="space-x-8 hidden md:flex text-gray-300">
-                <a href="browse.html" class="hover:text-teal-500 transition duration-200">Read a Book</a>
-                <a href="search.html" class="hover:text-teal-500 transition duration-200">Search</a>
-                <a href="cart.html" class="hover:text-teal-500 transition duration-200">Cart</a>
-                <a href="novia.html" class="hover:text-teal-500 transition duration-200">Use Novia AI</a>
-                <button id="signout-btn" class="hidden px-4 py-2 rounded border border-red-500 text-red-400 hover:bg-red-600 hover:text-white transition">Sign Out</button>
-            </div>
-        </nav>
-    </header>
+<div class="er-page">
 
-    <!-- Main Content -->
-    <main class="container mx-auto px-6 pt-24 pb-12">
-        <!-- Genre Filters + Sort -->
-        <div class="mb-12">
-            <h2 class="text-2xl font-bold mb-6 text-center">Explore Books by Genre</h2>
-            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
-              <div id="genre-filters" class="flex flex-wrap justify-center gap-4">
-                  <!-- Genre filters will be populated by JavaScript -->
-              </div>
-              <div class="flex items-center gap-2">
-                <label class="text-gray-300">Sort by</label>
-                <select id="sort-select" class="bg-gray-800 border border-gray-600 rounded px-3 py-2 text-gray-200">
-                  <option value="latest">Latest</option>
-                  <option value="popular">Most Popular</option>
-                  <option value="rated">Highly Rated</option>
-                </select>
-              </div>
-            </div>
+  <!-- Browse Header Section -->
+  <section style="padding: 40px 32px 0; max-width: 1280px; margin: 0 auto;">
+    <h1 style="font-family:'Space Grotesk',sans-serif;font-size:clamp(1.8rem,4vw,2.8rem);font-weight:900;margin-bottom:6px;">
+      Browse Books
+    </h1>
+    <p style="color:var(--color-text-secondary);font-size:.9rem;margin-bottom:32px;">
+      Explore our full catalog. Filter by genre or sort to find what you love.
+    </p>
+
+    <!-- Genre filters + Sort -->
+    <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:28px;">
+      <div id="genre-filters" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+      <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+        <span style="font-size:.8rem;color:var(--color-text-secondary);">Sort by</span>
+        <select id="sort-select" class="sort-select">
+          <option value="latest">Latest</option>
+          <option value="popular">Most Popular</option>
+          <option value="rated">Highest Rated</option>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <!-- Books Grid -->
+  <section style="padding: 0 32px 80px; max-width: 1280px; margin: 0 auto;">
+    <div id="books-container" class="browse-grid">
+      <!-- Skeleton loaders -->
+      <div class="er-skeleton" style="height:360px;border-radius:var(--radius-xl);"></div>
+      <div class="er-skeleton" style="height:360px;border-radius:var(--radius-xl);"></div>
+      <div class="er-skeleton" style="height:360px;border-radius:var(--radius-xl);"></div>
+      <div class="er-skeleton" style="height:360px;border-radius:var(--radius-xl);"></div>
+    </div>
+    <div id="no-results" style="display:none;text-align:center;padding:64px 24px;color:var(--color-text-secondary);">
+      <p style="font-size:3rem;margin-bottom:12px;">📭</p>
+      <p style="font-size:1.1rem;font-weight:600;color:var(--color-text-primary);">No books found</p>
+      <p style="font-size:.85rem;margin-top:6px;">Try a different genre or sort order.</p>
+    </div>
+  </section>
+
+  <!-- Book Details Modal -->
+  <div id="book-details-modal"></div>
+
+  <!-- Purchase Modal -->
+  <div id="purchase-modal"></div>
+
+</div>
+
+<script src="js/main.js"></script>
+<script>
+  const token = localStorage.getItem('echoreads_token');
+  const API_BASE_URL = '/api';
+
+  async function fetchBooks(genre = null) {
+    const sort = document.getElementById('sort-select')?.value || 'latest';
+    const url = genre
+      ? `${API_BASE_URL}/books?genre=${encodeURIComponent(genre)}&sort=${sort}`
+      : `${API_BASE_URL}/books?sort=${sort}`;
+    try {
+      const res = await fetch(url, {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      });
+      const data = await res.json();
+      if (data.success) displayBooks(data.data);
+    } catch(e) { console.error(e); }
+  }
+
+  function displayBooks(books) {
+    const container = document.getElementById('books-container');
+    const noResults = document.getElementById('no-results');
+    if (!books || !books.length) {
+      container.innerHTML = '';
+      noResults.style.display = 'block';
+      return;
+    }
+    noResults.style.display = 'none';
+    container.innerHTML = books.map(book => `
+      <div class="browse-book-card er-reveal">
+        <div style="overflow:hidden;height:260px;">
+          <img src="${book.imageUrl || 'https://placehold.co/240x260/0d0d1f/fff?text=Book'}" alt="${book.title}" />
         </div>
-
-        <!-- Books Grid -->
-        <div id="books-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <!-- Books will be populated by JavaScript -->
+        <div class="browse-book-card-body">
+          <div class="er-badge er-badge-teal" style="margin-bottom:10px;font-size:.68rem;">${book.genre || 'General'}</div>
+          <h3 style="font-size:.95rem;font-weight:700;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${book.title}</h3>
+          <p style="font-size:.8rem;color:var(--color-text-secondary);margin-bottom:10px;">by ${book.author}</p>
+          <p style="font-size:.78rem;color:var(--color-text-secondary);line-height:1.6;margin-bottom:14px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${book.description || ''}</p>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <span style="font-size:1.1rem;font-weight:800;color:var(--color-gold);">$${book.price.toFixed(2)}</span>
+            <span style="font-size:.78rem;color:var(--color-text-secondary);">⭐ ${book.rating} (${book.totalRatings})</span>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button onclick="showBookDetails('${book._id}')" class="er-btn er-btn-outline er-btn-sm" style="flex:1;justify-content:center;">Details</button>
+            <button onclick="openPurchase('${book._id}','${book.title.replace(/'/g,"\\'")}', ${book.price})" class="er-btn er-btn-primary er-btn-sm" style="flex:1;justify-content:center;">Buy Now</button>
+          </div>
         </div>
-    </main>
+      </div>
+    `).join('');
 
-    <!-- Book Details Modal -->
-    <div id="book-details-modal" class="hidden fixed inset-0 z-50">
-        <!-- Modal content will be populated by JavaScript -->
-    </div>
+    // re-trigger scroll reveal
+    document.querySelectorAll('.er-reveal:not(.visible)').forEach(el => el.classList.add('visible'));
+  }
 
-    <!-- Purchase Modal -->
-    <div id="purchase-modal" class="hidden fixed inset-0 z-50">
-      <!-- populated by JS -->
-    </div>
-
-    <!-- Novia AI Chat Interface -->
-    <div id="novia-chat" class="hidden fixed bottom-4 right-4 w-96 bg-gray-800 rounded-lg shadow-xl z-40">
-        <!-- Chat interface will be populated by JavaScript -->
-    </div>
-
-    <script>
-        const token = localStorage.getItem('echoreads_token');
-        if (!token) {
-            window.location.href = 'signin.html';
-        }
-        // Configure API URL
-        const API_BASE_URL = '/api';
-
-        // Fetch and display books
-        async function fetchBooks(genre = null) {
-            try {
-                const sort = (document.getElementById('sort-select')?.value || 'latest');
-                const url = genre 
-                    ? `${API_BASE_URL}/books?genre=${encodeURIComponent(genre)}&sort=${encodeURIComponent(sort)}`
-                    : `${API_BASE_URL}/books?sort=${encodeURIComponent(sort)}`;
-                const response = await fetch(url, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await response.json();
-                
-                if (data.success) {
-                    displayBooks(data.data);
-                }
-            } catch (error) {
-                console.error('Error fetching books:', error);
-            }
-        }
-
-        // Display books in the grid
-        function displayBooks(books) {
-            const container = document.getElementById('books-container');
-            container.innerHTML = books.map(book => `
-                <div class="book-card bg-gray-800 rounded-lg overflow-hidden shadow-lg">
-                    <img src="${book.imageUrl}" alt="${book.title}" 
-                         class="w-full h-64 object-cover">
-                    <div class="p-6">
-                        <h3 class="text-xl font-semibold text-white mb-2">${book.title}</h3>
-                        <p class="text-gray-400 mb-3">by ${book.author}</p>
-                        <p class="text-gray-300 mb-4 line-clamp-3">${book.description}</p>
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="text-amber-400 font-bold text-lg">$${book.price.toFixed(2)}</div>
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center">
-                                <span class="text-yellow-400 mr-1">★</span>
-                                <span class="text-gray-400">${book.rating} (${book.totalRatings})</span>
-                            </div>
-                            <div class="flex gap-2">
-                                <button onclick="showBookDetails('${book._id}')"
-                                        class="px-3 py-2 bg-teal-600 text-white rounded hover:bg-teal-700 transition text-sm">
-                                    Read More
-                                </button>
-                                <button onclick="openPurchase('${book._id}','${book.title.replace(/'/g, "\\'")}', ${book.price})"
-                                        class="px-3 py-2 bg-amber-500 text-black rounded hover:bg-amber-400 transition text-sm font-semibold">
-                                    Buy Now
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+  async function showBookDetails(bookId) {
+    const modal = document.getElementById('book-details-modal');
+    modal.innerHTML = `<div class="er-modal-overlay"><div class="er-modal-box"><div class="er-skeleton" style="height:200px;border-radius:12px;"></div></div></div>`;
+    try {
+      const res = await fetch(`${API_BASE_URL}/books/${bookId}`, {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error();
+      const book = data.data;
+      modal.innerHTML = `
+        <div class="er-modal-overlay" onclick="closeBookDetails(event)">
+          <div class="er-modal-box" onclick="event.stopPropagation()">
+            <button onclick="closeBookDetails()" class="er-modal-close">✕</button>
+            <div style="display:grid;grid-template-columns:220px 1fr;gap:32px;align-items:start;">
+              <img src="${book.imageUrl || ''}" alt="${book.title}" style="width:100%;border-radius:var(--radius-lg);box-shadow:var(--shadow-card);" />
+              <div>
+                <span class="er-badge er-badge-teal" style="margin-bottom:12px;display:inline-flex;">${book.genre}</span>
+                <h2 style="font-size:1.8rem;font-weight:900;margin-bottom:6px;letter-spacing:-0.3px;">${book.title}</h2>
+                <p style="color:var(--color-text-secondary);margin-bottom:16px;">by <strong style="color:var(--color-text-primary);">${book.author}</strong></p>
+                <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
+                  <span style="color:var(--color-gold);">⭐ ${book.rating}</span>
+                  <span style="color:var(--color-text-muted);font-size:.8rem;">${book.totalRatings} ratings</span>
                 </div>
-            `).join('');
-        }
-
-        // Show book details modal
-        async function showBookDetails(bookId) {
-            try {
-                const response = await fetch(`${API_BASE_URL}/books/${bookId}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await response.json();
-                
-                if (data.success) {
-                    const book = data.data;
-                    const modal = document.getElementById('book-details-modal');
-                    
-                    modal.innerHTML = `
-                        <div class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4">
-                            <div class="bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto p-8 relative">
-                                <button onclick="closeBookDetails()" 
-                                        class="absolute top-4 right-4 text-gray-400 hover:text-white">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                    </svg>
-                                </button>
-                                
-                                <div class="flex flex-col md:flex-row gap-8">
-                                    <div class="md:w-1/3">
-                                        <img src="${book.imageUrl}" alt="${book.title}" 
-                                             class="w-full h-auto rounded-lg shadow-lg">
-                                    </div>
-                                    
-                                    <div class="md:w-2/3">
-                                        <h2 class="text-3xl font-bold mb-4">${book.title}</h2>
-                                        <p class="text-xl text-gray-400 mb-4">by ${book.author}</p>
-                                        
-                                        <div class="mb-6">
-                                            <h3 class="text-xl font-semibold mb-2">Summary</h3>
-                                            <p class="text-gray-300">${book.summary}</p>
-                                        </div>
-
-                                        <div class="mb-6">
-                                            <h3 class="text-xl font-semibold mb-2">Long Summary</h3>
-                                            <pre class="text-gray-300 whitespace-pre-wrap bg-gray-900/40 p-4 rounded">${book.content || ''}</pre>
-                                        </div>
-                                        
-                                        <div class="flex items-center gap-4 mb-6">
-                                            <div class="flex items-center">
-                                                <span class="text-yellow-400 mr-1">★</span>
-                                                <span class="text-gray-400">${book.rating} (${book.totalRatings} ratings)</span>
-                                            </div>
-                                            <div class="flex items-center">
-                                                <span class="text-gray-400">Genre:</span>
-                                                <span class="ml-2 px-3 py-1 bg-gray-700 rounded-full text-sm">
-                                                    ${book.genre}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="flex items-center justify-between">
-                                            <div class="text-2xl font-bold text-amber-500">
-                                                $${book.price.toFixed(2)}
-                                            </div>
-                                            <div class="flex gap-3">
-                                              <button onclick="addToCart('${book._id}', '${book.title}')" class="px-5 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-500 transition font-semibold">
-                                                Add to Cart
-                                              </button>
-                                              <button onclick="openPurchase('${book._id}','${book.title}', ${book.price})" class="px-6 py-3 bg-amber-500 text-black rounded-lg hover:bg-amber-400 transition font-semibold">
-                                                Buy Now
-                                              </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    
-                    modal.classList.remove('hidden');
-                }
-            } catch (error) {
-                console.error('Error fetching book details:', error);
-                alert('Failed to load book details');
-            }
-        }
-
-        // Close book details modal
-        function closeBookDetails() {
-            const modal = document.getElementById('book-details-modal');
-            modal.classList.add('hidden');
-        }
-
-        // Initialize genre filters
-        async function initializeGenreFilters() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/books/genres`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await response.json();
-                
-                if (data.success) {
-                    const container = document.getElementById('genre-filters');
-                    container.innerHTML = `
-                        <button class="genre-filter px-4 py-2 rounded-full border border-teal-500 text-teal-500 hover:bg-teal-500 hover:text-white transition active"
-                                onclick="filterByGenre(null, this)">
-                            All Genres
-                        </button>
-                    ` + data.data.map(genre => `
-                        <button class="genre-filter px-4 py-2 rounded-full border border-teal-500 text-teal-500 hover:bg-teal-500 hover:text-white transition"
-                                onclick="filterByGenre('${genre}', this)">
-                            ${genre}
-                        </button>
-                    `).join('');
-                }
-            } catch (error) {
-                console.error('Error fetching genres:', error);
-            }
-        }
-
-        // Filter books by genre
-        function filterByGenre(genre, button) {
-            // Update active button
-            document.querySelectorAll('.genre-filter').forEach(btn => 
-                btn.classList.remove('active'));
-            button.classList.add('active');
-            
-            // Fetch filtered books with current sort
-            fetchBooks(genre);
-        }
-
-        // Cart helpers
-        async function addToCart(bookId, title){
-          if(!token){ alert('Please sign in first.'); window.location.href='signin.html'; return; }
-          try{
-            const r = await fetch('/api/cart',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({bookId,quantity:1})});
-            const d = await r.json(); if(!d.success) throw new Error();
-            alert(`Added to cart: ${title}`);
-          }catch{ alert('Failed to add to cart.'); }
-        }
-
-        // Purchase helpers
-        function currentUser(){ try { return JSON.parse(localStorage.getItem('echoreads_user')||'null'); } catch { return null; } }
-        function openPurchase(bookId, title, price){
-          const u=currentUser();
-          if(!u){ alert('Please sign in first.'); window.location.href='signin.html'; return; }
-          const modal=document.getElementById('purchase-modal');
-          modal.innerHTML = `
-            <div class="fixed inset-0 bg-black/70 flex items-center justify-center p-4">
-              <div class="bg-gray-800 rounded-xl max-w-md w-full p-6 relative max-h-[90vh] overflow-y-auto">
-                <button onclick="closePurchase()" class="absolute top-3 right-3 text-gray-400 hover:text-white">✕</button>
-                <h3 class="text-xl font-bold mb-4">Purchase Book</h3>
-                <div class="mb-4">
-                  <p class="text-gray-300 font-semibold">${title}</p>
-                  <p class="text-amber-400 text-2xl font-bold">$${price.toFixed(2)}</p>
+                <h4 style="font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-muted);margin-bottom:8px;">Summary</h4>
+                <p style="font-size:.875rem;color:var(--color-text-secondary);line-height:1.75;margin-bottom:20px;">${book.summary || book.description || ''}</p>
+                <div style="display:flex;align-items:center;justify-content:space-between;padding-top:20px;border-top:1px solid var(--color-border);">
+                  <span style="font-size:2rem;font-weight:900;color:var(--color-gold);">$${book.price.toFixed(2)}</span>
+                  <div style="display:flex;gap:10px;">
+                    <button onclick="addToCart('${book._id}', '${book.title.replace(/'/g,"\\'")}'); closeBookDetails();" class="er-btn er-btn-outline">Add to Cart</button>
+                    <button onclick="openPurchase('${book._id}','${book.title.replace(/'/g,"\\'")}',${book.price}); closeBookDetails();" class="er-btn er-btn-primary">Buy Now</button>
+                  </div>
                 </div>
-                <form id="purchase-form" class="space-y-4">
-                  <div>
-                    <label class="block text-sm font-medium text-gray-300 mb-1">Full Name</label>
-                    <input type="text" id="purchase-name" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white" required>
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-300 mb-1">Address</label>
-                    <textarea id="purchase-address" rows="3" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white" required></textarea>
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-300 mb-1">Pincode</label>
-                    <input type="text" id="purchase-pincode" class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white" required>
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-300 mb-2">Payment Method</label>
-                    <div class="space-y-2">
-                      <div class="flex items-center">
-                        <input type="radio" id="upi" name="payment-method" value="UPI" class="mr-2">
-                        <label for="upi" class="text-gray-300">UPI</label>
-                      </div>
-                      <div class="flex items-center">
-                        <input type="radio" id="cod" name="payment-method" value="Cash on Delivery" class="mr-2" checked>
-                        <label for="cod" class="text-gray-300">Cash on Delivery</label>
-                      </div>
-                    </div>
-                  </div>
-                  <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-black font-semibold py-2 rounded">Complete Purchase</button>
-                </form>
               </div>
-            </div>`;
-          modal.classList.remove('hidden');
-          
-          document.getElementById('purchase-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const name = document.getElementById('purchase-name').value;
-            const address = document.getElementById('purchase-address').value;
-            const pincode = document.getElementById('purchase-pincode').value;
-            const paymentMethod = document.querySelector('input[name="payment-method"]:checked').value;
-            
-            try {
-              const r = await fetch('/api/purchases', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                  bookId,
-                  price,
-                  name,
-                  address,
-                  pincode,
-                  paymentMethod
-                })
-              });
-              const d = await r.json();
-              if (!d.success) throw new Error(d.message || 'Purchase failed');
-              alert('Purchase successful!');
-              closePurchase();
-              // Optionally redirect to purchases page
-              // window.location.href = 'purchases.html';
-            } catch (error) {
-              alert('Purchase failed: ' + error.message);
-            }
-          });
-        }
-        function closePurchase(){ const modal=document.getElementById('purchase-modal'); modal.classList.add('hidden'); modal.innerHTML=''; }
+            </div>
+          </div>
+        </div>`;
+    } catch {
+      modal.innerHTML = '';
+    }
+  }
 
-        // Initialize page
-        document.addEventListener('DOMContentLoaded', () => {
-            const params = new URLSearchParams(window.location.search);
-            const initialGenre = params.get('genre');
-            fetchBooks(initialGenre);
-            (async () => {
-                await initializeGenreFilters();
-                if (initialGenre) {
-                    const btns = Array.from(document.querySelectorAll('.genre-filter'));
-                    const match = btns.find(b => b.textContent.trim() === initialGenre);
-                    if (match) {
-                        btns.forEach(b => b.classList.remove('active'));
-                        match.classList.add('active');
-                    }
-                }
-            })();
-            const sortSelect = document.getElementById('sort-select');
-            if (sortSelect) {
-              sortSelect.addEventListener('change', () => {
-                const active = document.querySelector('.genre-filter.active');
-                const g = active && active.textContent.trim() !== 'All Genres' ? active.textContent.trim() : null;
-                fetchBooks(g);
-              });
-            }
+  function closeBookDetails(event) {
+    if (event && event.target !== event.currentTarget) return;
+    document.getElementById('book-details-modal').innerHTML = '';
+  }
 
-            // Show sign out if signed in
-            try {
-                const u = JSON.parse(localStorage.getItem('echoreads_user') || 'null');
-                const signout = document.getElementById('signout-btn');
-                if (u && signout) {
-                    signout.classList.remove('hidden');
-                }
-            } catch {}
+  async function addToCart(bookId, title) {
+    if (!token) { alert('Please sign in first.'); window.location.href = 'signin.html'; return; }
+    try {
+      const r = await fetch('/api/cart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ bookId, quantity: 1 })
+      });
+      const d = await r.json();
+      if (!d.success) throw new Error();
+      // Show toast
+      showToast(`✓ "${title}" added to cart`);
+    } catch { showToast('Failed to add to cart', true); }
+  }
 
-            // Sign out functionality
-            document.getElementById('signout-btn').addEventListener('click', function() {
-                localStorage.removeItem('echoreads_user');
-                localStorage.removeItem('echoreads_token');
-                window.location.href = 'index.html';
-            });
+  function showToast(msg, isError = false) {
+    const t = document.createElement('div');
+    t.style.cssText = `position:fixed;bottom:28px;right:28px;z-index:9999;padding:12px 20px;border-radius:var(--radius-md);font-size:.85rem;font-weight:600;
+      background:${isError ? 'rgba(244,63,94,0.15)' : 'rgba(16,185,129,0.15)'};
+      border:1px solid ${isError ? 'rgba(244,63,94,0.4)' : 'rgba(16,185,129,0.4)'};
+      color:${isError ? 'var(--color-rose)' : 'var(--color-emerald)'};
+      backdrop-filter:blur(12px);transition:opacity 0.3s;`;
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 2500);
+  }
+
+  function openPurchase(bookId, title, price) {
+    const u = JSON.parse(localStorage.getItem('echoreads_user') || 'null');
+    if (!u) { alert('Please sign in first.'); window.location.href = 'signin.html'; return; }
+    const modal = document.getElementById('purchase-modal');
+    modal.innerHTML = `
+      <div class="er-modal-overlay" onclick="closePurchase(event)">
+        <div class="er-modal-box" style="max-width:480px;" onclick="event.stopPropagation()">
+          <button onclick="closePurchase()" class="er-modal-close">✕</button>
+          <h3 style="font-size:1.3rem;font-weight:900;margin-bottom:20px;">Purchase Book</h3>
+          <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:16px;margin-bottom:24px;">
+            <p style="font-weight:700;margin-bottom:4px;">${title}</p>
+            <p style="font-size:1.6rem;font-weight:900;color:var(--color-gold);">$${price.toFixed(2)}</p>
+          </div>
+          <form id="purchase-form" style="display:flex;flex-direction:column;gap:16px;">
+            <div>
+              <label style="font-size:.8rem;font-weight:600;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px;">Full Name</label>
+              <input type="text" id="purchase-name" class="er-input" required />
+            </div>
+            <div>
+              <label style="font-size:.8rem;font-weight:600;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px;">Address</label>
+              <textarea id="purchase-address" rows="2" class="er-input" style="resize:none;" required></textarea>
+            </div>
+            <div>
+              <label style="font-size:.8rem;font-weight:600;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px;">Pincode</label>
+              <input type="text" id="purchase-pincode" class="er-input" required />
+            </div>
+            <div>
+              <label style="font-size:.8rem;font-weight:600;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;display:block;">Payment Method</label>
+              <div style="display:flex;gap:12px;">
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.875rem;"><input type="radio" name="payment-method" value="UPI" /> UPI</label>
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.875rem;"><input type="radio" name="payment-method" value="Cash on Delivery" checked /> Cash on Delivery</label>
+              </div>
+            </div>
+            <button type="submit" class="er-btn er-btn-primary" style="justify-content:center;padding:14px;">Complete Purchase</button>
+          </form>
+        </div>
+      </div>`;
+    modal.querySelector('#purchase-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        const r = await fetch('/api/purchases', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({
+            bookId, price,
+            name: document.getElementById('purchase-name').value,
+            address: document.getElementById('purchase-address').value,
+            pincode: document.getElementById('purchase-pincode').value,
+            paymentMethod: document.querySelector('input[name="payment-method"]:checked').value
+          })
         });
-    </script>
+        const d = await r.json();
+        if (!d.success) throw new Error(d.message || 'Purchase failed');
+        closePurchase();
+        showToast('✓ Purchase successful! Book added to your library.');
+      } catch (err) { showToast('Purchase failed: ' + err.message, true); }
+    });
+  }
+  function closePurchase(event) {
+    if (event && event.target !== event.currentTarget) return;
+    const m = document.getElementById('purchase-modal');
+    m.innerHTML = '';
+  }
+
+  async function initGenreFilters() {
+    const container = document.getElementById('genre-filters');
+    const all = `<button class="genre-filter-btn active" onclick="filterByGenre(null, this)">All</button>`;
+    try {
+      const res = await fetch(`${API_BASE_URL}/books/genres`, {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      });
+      const data = await res.json();
+      if (data.success) {
+        container.innerHTML = all + data.data.map(g =>
+          `<button class="genre-filter-btn" onclick="filterByGenre('${g}', this)">${g}</button>`
+        ).join('');
+      }
+    } catch { container.innerHTML = all; }
+  }
+
+  function filterByGenre(genre, btn) {
+    document.querySelectorAll('.genre-filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    fetchBooks(genre);
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    const initialGenre = params.get('genre');
+    fetchBooks(initialGenre);
+    initGenreFilters().then(() => {
+      if (initialGenre) {
+        const btns = [...document.querySelectorAll('.genre-filter-btn')];
+        const match = btns.find(b => b.textContent.trim() === initialGenre);
+        if (match) { btns.forEach(b => b.classList.remove('active')); match.classList.add('active'); }
+      }
+    });
+    document.getElementById('sort-select').addEventListener('change', () => {
+      const active = document.querySelector('.genre-filter-btn.active');
+      const g = active && active.textContent.trim() !== 'All' ? active.textContent.trim() : null;
+      fetchBooks(g);
+    });
+  });
+</script>
 </body>
 </html>

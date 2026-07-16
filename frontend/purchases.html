@@ -3,142 +3,200 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My Purchases - EchoReads</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>body{background:radial-gradient(at 70% 30%, #171730, #0a0a1a);color:#e2e8f0;font-family:Inter,system-ui,sans-serif}</style>
+  <title>My Library — EchoReads</title>
+  <meta name="description" content="View all your purchased e-books on EchoReads. Read them anytime in our beautiful reader." />
+  <link rel="stylesheet" href="css/shared.css" />
+  <script src="js/shared.js" defer></script>
+  <style>
+    .purchase-card {
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      transition: transform var(--transition-base), border-color var(--transition-base), box-shadow var(--transition-base);
+    }
+    .purchase-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--color-border-hover);
+      box-shadow: var(--shadow-card-hover);
+    }
+    .purchase-card img {
+      width: 100%; height: 180px;
+      object-fit: cover;
+    }
+    .purchase-card-body { padding: 16px; display: flex; flex-direction: column; justify-content: space-between; min-height: 200px; }
+
+    .empty-library-icon { font-size: 5rem; margin-bottom: 16px; animation: float 3s ease-in-out infinite; }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+
+    .purchases-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 24px;
+    }
+
+    .search-wrap {
+      display: flex;
+      max-width: 480px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+      transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    }
+    .search-wrap:focus-within {
+      border-color: var(--color-teal);
+      box-shadow: 0 0 0 3px rgba(34,211,238,0.1);
+    }
+    .search-wrap input {
+      flex: 1; background: transparent; border: none; outline: none;
+      padding: 12px 18px; color: var(--color-text-primary);
+      font-size: 0.875rem; font-family: 'Inter', sans-serif;
+    }
+    .search-wrap input::placeholder { color: var(--color-text-muted); }
+    .search-wrap button {
+      padding: 10px 20px; background: var(--gradient-teal); color: #000;
+      font-weight: 700; font-size: .82rem; border: none; cursor: pointer;
+      transition: filter var(--transition-fast);
+    }
+    .search-wrap button:hover { filter: brightness(1.1); }
+  </style>
 </head>
-<body class="min-h-screen">
-  <header class="border-b border-slate-800/80 bg-slate-900/40 sticky top-0 z-40">
-    <div class="container mx-auto px-6 py-4 flex items-center justify-between">
-      <a href="index.html" class="text-2xl font-bold text-amber-400">Echo<span class="text-white">Reads</span></a>
-      <nav class="space-x-4 text-gray-300 flex items-center">
-        <a class="hover:text-white" href="browse.html">Browse</a>
-        <a class="hover:text-white" href="genres.html">Genres</a>
-        <a class="hover:text-white" href="cart.html">Cart</a>
-        <a class="hover:text-white" href="novia.html">Novia</a>
-        <a class="text-amber-400" href="purchases.html">My Purchases</a>
-        <button id="signout" class="ml-4 px-3 py-1 rounded-full border border-rose-500 text-rose-300 hover:bg-rose-600/20">Sign Out</button>
-      </nav>
-    </div>
-  </header>
-  <main class="container mx-auto px-6 py-10">
-    <h1 class="text-4xl font-extrabold text-white mb-6">My Purchases</h1>
-    <div class="max-w-3xl">
-      <div class="flex gap-2 mb-6">
-        <input id="q" class="flex-1 bg-gray-700 rounded px-4 py-2 text-white" placeholder="Search purchases (title/genre)" />
-        <button id="go" class="px-4 py-2 bg-teal-600 text-white rounded hover:bg-teal-500">Search</button>
+<body>
+<div class="er-page">
+  <main style="padding: 48px 32px 80px; max-width: 1280px; margin: 0 auto; flex: 1;">
+
+    <!-- Page Header -->
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:32px;flex-wrap:wrap;gap:16px;">
+      <div>
+        <div class="er-badge er-badge-gold" style="margin-bottom:10px;display:inline-flex;">📖 Your Digital Library</div>
+        <h1 style="font-family:'Space Grotesk',sans-serif;font-size:clamp(1.8rem,4vw,2.6rem);font-weight:900;margin-bottom:6px;">My Library</h1>
+        <p style="color:var(--color-text-secondary);font-size:.9rem;">All your purchased books — read them anytime.</p>
       </div>
+      <a href="browse.html" class="er-btn er-btn-primary er-btn-sm">Browse More Books →</a>
     </div>
-    <div id="list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-    <div id="empty" class="hidden text-gray-400">No purchases yet.</div>
+
+    <!-- Search bar -->
+    <div class="search-wrap" style="margin-bottom:32px;">
+      <input id="q" type="text" placeholder="Search by title or genre…" />
+      <button id="go">Search</button>
+    </div>
+
+    <!-- Books Grid -->
+    <div id="list" class="purchases-grid">
+      <!-- Skeleton loaders -->
+      <div class="er-skeleton" style="height:380px;border-radius:var(--radius-xl);"></div>
+      <div class="er-skeleton" style="height:380px;border-radius:var(--radius-xl);"></div>
+      <div class="er-skeleton" style="height:380px;border-radius:var(--radius-xl);"></div>
+    </div>
+
+    <!-- Empty state -->
+    <div id="empty" style="display:none;text-align:center;padding:80px 24px;background:var(--color-bg-card);border:1px solid var(--color-border);border-radius:var(--radius-xl);">
+      <div class="empty-library-icon">📚</div>
+      <h3 style="font-size:1.2rem;font-weight:700;margin-bottom:8px;">Your library is empty</h3>
+      <p style="color:var(--color-text-secondary);font-size:.875rem;margin-bottom:24px;">Purchase books to unlock them here and read anytime.</p>
+      <a href="browse.html" class="er-btn er-btn-primary">Browse Books</a>
+    </div>
   </main>
-  <script>
-    const token = localStorage.getItem('echoreads_token');
-    if (!token) {
-        window.location.href = 'signin.html';
-    }
-    const API='/api/purchases/mine';
-    
-    function card(p){ 
-      const b=p.book||{}; 
-      return `
-      <div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg border border-gray-700/50 hover:border-cyan-500/30 transition duration-350">
-        ${b.imageUrl ? `<img src="${b.imageUrl}" alt="${b.title||'Book cover'}" class="w-full h-40 object-cover" />` : ''}
-        <div class="p-4 flex flex-col justify-between h-[210px]">
+</div>
+
+<script>
+  const token = localStorage.getItem('echoreads_token');
+  if (!token) window.location.href = 'signin.html';
+
+  const API = '/api/purchases/mine';
+  let ALL = [];
+
+  function card(p) {
+    const b = p.book || {};
+    return `
+      <div class="purchase-card er-reveal">
+        ${b.imageUrl ? `<img src="${b.imageUrl}" alt="${b.title || 'Book'}" />` : `<div style="height:180px;background:linear-gradient(135deg,#1a1040,#0a0a1a);display:flex;align-items:center;justify-content:center;font-size:3rem;">📖</div>`}
+        <div class="purchase-card-body">
           <div>
-            <h3 class="text-base font-semibold text-white truncate">${b.title||'Unknown Title'}</h3>
-            <p class="text-xs text-gray-400 truncate mb-2">${b.genre||''}</p>
-            <div class="space-y-1 text-xs text-gray-400">
-              <p>Address: <span class="text-gray-300 font-medium">${p.address || 'N/A'}</span></p>
-              <p>Payment: <span class="text-gray-300 font-medium">${p.paymentMethod || 'N/A'}</span></p>
+            <div class="er-badge er-badge-teal" style="margin-bottom:8px;font-size:.65rem;">${b.genre || 'General'}</div>
+            <h3 style="font-size:.9rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px;">${b.title || 'Unknown Title'}</h3>
+            <p style="font-size:.75rem;color:var(--color-text-secondary);margin-bottom:10px;">by ${b.author || 'N/A'}</p>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid var(--color-border);border-bottom:1px solid var(--color-border);margin-bottom:12px;">
+              <span style="font-size:.95rem;font-weight:800;color:var(--color-gold);">$${(p.price || 0).toFixed(2)}</span>
+              <span style="font-size:.7rem;color:var(--color-text-muted);">${new Date(p.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
             </div>
           </div>
-          <div>
-            <div class="flex items-center justify-between text-xs border-t border-gray-700/60 pt-2 mb-3">
-              <span class="text-amber-400 font-extrabold text-sm">$${(p.price||0).toFixed(2)}</span>
-              <span class="text-gray-500">${new Date(p.createdAt).toLocaleDateString()}</span>
-            </div>
-            ${b._id ? `
-              <button onclick="openReader('${b._id}')" class="w-full bg-gradient-to-r from-cyan-600 to-emerald-600 hover:from-cyan-500 hover:to-emerald-500 text-white font-semibold py-2 px-3 rounded-lg text-xs tracking-wider transition">
-                READ BOOK 📖
-              </button>
-            ` : ''}
-          </div>
+          ${b._id ? `
+            <button onclick="window.location.href='reader.html?bookId=${b._id}'" class="er-btn er-btn-teal" style="width:100%;justify-content:center;font-size:.8rem;">
+              📖 Read Book
+            </button>
+          ` : ''}
         </div>
-      </div>`; 
-    }
-    
-    let ALL=[];
+      </div>`;
+  }
 
-    // Verify Stripe checkout sessions on redirect
-    async function verifyStripe() {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get('stripe_success') === 'true' && params.get('session_id')) {
-        const sessionId = params.get('session_id');
-        const listEl = document.getElementById('list');
-        listEl.innerHTML = '<div class="col-span-full text-center text-cyan-400 font-bold p-10 animate-pulse text-lg">Verifying payment... unlocking your library...</div>';
-        
-        try {
-          const res = await fetch('/api/purchases/verify-stripe-checkout', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ sessionId })
-          });
-          const data = await res.json();
-          if (data.success) {
-            alert('Stripe payment verified successfully! Your book purchases are active.');
-          } else {
-            alert('Verification failed: ' + data.message);
-          }
-        } catch (err) {
-          console.error('Error verifying Stripe checkout:', err);
-          alert('Failed to complete Stripe verification.');
-        }
-        
-        // Remove query parameters from URL without page reload
-        window.history.replaceState({}, document.title, window.location.pathname);
-      }
-    }
-
-    async function load(){
-      await verifyStripe();
+  async function verifyStripe() {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('stripe_success') === 'true' && params.get('session_id')) {
+      const listEl = document.getElementById('list');
+      listEl.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--color-teal);font-weight:700;font-size:1.1rem;">🔄 Verifying payment…</div>`;
       try {
-        const r=await fetch(API,{headers:{'Authorization':`Bearer ${token}`}}); 
-        const d=await r.json();
-        ALL=(d.data||[]);
-        render(ALL);
-      } catch (err) {
-        console.error(err);
-      }
+        const res = await fetch('/api/purchases/verify-stripe-checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ sessionId: params.get('session_id') })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('✓ Payment verified! Your book is now in your library.');
+        } else {
+          showToast('Verification failed: ' + data.message, true);
+        }
+      } catch { showToast('Failed to verify payment.', true); }
+      window.history.replaceState({}, document.title, window.location.pathname);
     }
+  }
 
-    function render(items){
-      const el=document.getElementById('list');
-      el.innerHTML=items.map(card).join('');
-      document.getElementById('empty').classList.toggle('hidden', !!items.length);
+  function showToast(msg, isError = false) {
+    const t = document.createElement('div');
+    t.style.cssText = `position:fixed;bottom:28px;right:28px;z-index:9999;padding:12px 20px;border-radius:var(--radius-md);font-size:.85rem;font-weight:600;
+      background:${isError ? 'rgba(244,63,94,0.15)' : 'rgba(16,185,129,0.15)'};
+      border:1px solid ${isError ? 'rgba(244,63,94,0.4)' : 'rgba(16,185,129,0.4)'};
+      color:${isError ? 'var(--color-rose)' : 'var(--color-emerald)'};
+      backdrop-filter:blur(12px);transition:opacity 0.3s;`;
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 3000);
+  }
+
+  async function load() {
+    await verifyStripe();
+    try {
+      const r = await fetch(API, { headers: { 'Authorization': `Bearer ${token}` } });
+      const d = await r.json();
+      ALL = d.data || [];
+      render(ALL);
+    } catch(err) { console.error(err); }
+  }
+
+  function render(items) {
+    const el = document.getElementById('list');
+    const empty = document.getElementById('empty');
+    if (!items.length) {
+      el.innerHTML = '';
+      empty.style.display = 'block';
+      return;
     }
+    empty.style.display = 'none';
+    el.innerHTML = items.map(card).join('');
+    document.querySelectorAll('.er-reveal:not(.visible)').forEach(e => e.classList.add('visible'));
+  }
 
-    function search(){
-      const q=document.getElementById('q').value.toLowerCase();
-      render(ALL.filter(p=> ((p.book?.title||'') + (p.book?.genre||'')).toLowerCase().includes(q)));
-    }
+  function search() {
+    const q = document.getElementById('q').value.toLowerCase();
+    render(ALL.filter(p => ((p.book?.title || '') + (p.book?.genre || '')).toLowerCase().includes(q)));
+  }
 
-    function openReader(bookId) {
-      window.location.href = `reader.html?bookId=${bookId}`;
-    }
+  document.getElementById('go').onclick = search;
+  document.getElementById('q').addEventListener('keypress', e => { if (e.key === 'Enter') search(); });
 
-    document.getElementById('go').onclick=search;
-    document.getElementById('q').addEventListener('keypress',e=>{ if(e.key==='Enter') search(); });
-    document.getElementById('signout').onclick=()=>{ 
-      localStorage.removeItem('echoreads_token');
-      localStorage.removeItem('echoreads_user');
-      window.location.href='index.html';
-    };
-    
-    load();
-  </script>
+  load();
+</script>
 </body>
 </html>

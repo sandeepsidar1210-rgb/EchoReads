@@ -38,11 +38,11 @@
     .genre-filter-bar input::placeholder { color: var(--color-text-muted); }
     .genre-filter-bar span { padding: 0 20px; display:flex;align-items:center;color:var(--color-text-muted); }
 
-    /* Genre grid */
     .genres-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
       gap: 20px;
+      width: 100%;
     }
 
     .genre-card {
@@ -190,7 +190,7 @@
       const meta = GENRE_META[g] || { icon:'📚', color:'teal', desc:`Browse ${g}` };
       return `
         <a href="browse.html?genre=${encodeURIComponent(g)}"
-           class="genre-card er-reveal er-reveal-delay-${(i % 5)+1}"
+           class="genre-card"
            data-color="${meta.color}" data-genre="${g.toLowerCase()}">
           <span class="genre-count">Popular</span>
           <span class="genre-icon">${meta.icon}</span>
@@ -199,16 +199,6 @@
         </a>
       `;
     }).join('');
-
-    // Re-trigger scroll reveal for new elements
-    if (window.erInitScrollReveal) window.erInitScrollReveal();
-    else {
-      const els = document.querySelectorAll('.er-reveal:not(.visible)');
-      const io = new IntersectionObserver(entries => {
-        entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('visible'); io.unobserve(e.target); } });
-      }, { threshold: 0.08 });
-      els.forEach(el => io.observe(el));
-    }
   }
 
   function filterGenres(q) {

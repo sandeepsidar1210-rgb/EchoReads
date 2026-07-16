@@ -3,171 +3,258 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sign In / Sign Up - EchoReads</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Sign In / Sign Up — EchoReads</title>
+  <meta name="description" content="Sign in or create your EchoReads account to start reading and listening to your favorite books." />
+  <link rel="stylesheet" href="css/shared.css" />
   <style>
     body {
-      background: radial-gradient(at 70% 30%, #171730, #0a0a1a);
-      color: #e2e8f0;
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
     }
-    .glass {
-      background: rgba(30, 41, 59, 0.45);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+
+    .auth-orb-1 { position:absolute;width:400px;height:400px;top:-80px;left:-100px;background:radial-gradient(circle,var(--color-teal),transparent);filter:blur(90px);opacity:.2;pointer-events:none; }
+    .auth-orb-2 { position:absolute;width:300px;height:300px;bottom:-60px;right:-60px;background:radial-gradient(circle,var(--color-gold),transparent);filter:blur(80px);opacity:.18;pointer-events:none; }
+
+    .auth-card {
+      width: 100%;
+      max-width: 440px;
+      background: rgba(13, 13, 31, 0.88);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl);
+      padding: 40px 36px;
+      position: relative;
+      z-index: 2;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.6);
     }
+
+    .auth-logo {
+      text-align: center;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 2rem;
+      font-weight: 900;
+      margin-bottom: 28px;
+    }
+
+    .tab-toggle {
+      display: flex;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-full);
+      padding: 4px;
+      margin-bottom: 28px;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 9px 12px;
+      text-align: center;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-radius: var(--radius-full);
+      border: none;
+      cursor: pointer;
+      transition: all var(--transition-base);
+      background: transparent;
+      color: var(--color-text-secondary);
+    }
+    .tab-btn.active {
+      background: var(--gradient-teal);
+      color: #000;
+    }
+
+    .auth-form { display: flex; flex-direction: column; gap: 18px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--color-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      color: var(--color-text-primary);
+      font-size: 0.9rem;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    }
+    .form-group input::placeholder { color: var(--color-text-muted); }
+    .form-group input:focus {
+      border-color: var(--color-teal);
+      box-shadow: 0 0 0 3px rgba(34,211,238,0.1);
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 14px;
+      background: var(--gradient-teal);
+      color: #000;
+      font-size: 0.9rem;
+      font-weight: 700;
+      border: none;
+      border-radius: var(--radius-full);
+      cursor: pointer;
+      transition: filter var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+      box-shadow: 0 4px 16px rgba(34,211,238,0.25);
+      margin-top: 4px;
+    }
+    .submit-btn:hover {
+      filter: brightness(1.08);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(34,211,238,0.35);
+    }
+    .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .msg-text {
+      text-align: center;
+      font-size: 0.85rem;
+      font-weight: 600;
+      min-height: 1.5rem;
+      margin-top: 8px;
+    }
+    .msg-error  { color: var(--color-rose); }
+    .msg-success{ color: var(--color-emerald); }
+    .msg-info   { color: var(--color-teal); }
+
+    .back-link {
+      position: absolute;
+      top: 20px; left: 20px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--color-text-secondary);
+      display: flex; align-items: center; gap: 4px;
+      transition: color var(--transition-fast);
+      text-decoration: none;
+    }
+    .back-link:hover { color: var(--color-teal); }
   </style>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            'accent-teal': '#14b8a6',
-            'accent-gold': '#fbbf24',
-          }
-        }
-      }
-    }
-  </script>
 </head>
-<body class="min-h-screen flex flex-col justify-center items-center p-4">
-  <div class="absolute top-6 left-6">
-    <a href="index.html" class="text-accent-teal hover:text-teal-400 font-semibold transition flex items-center gap-1">
-      &larr; Back to Home
-    </a>
-  </div>
+<body>
+  <div class="auth-orb-1"></div>
+  <div class="auth-orb-2"></div>
 
-  <div class="w-full max-w-md glass rounded-3xl p-8 shadow-2xl transition-all duration-300">
-    <div class="flex justify-center mb-6">
-      <span class="text-3xl font-extrabold text-accent-gold">Echo<span class="text-white">Reads</span></span>
-    </div>
-    
-    <!-- Tab Toggles -->
-    <div class="flex rounded-full bg-slate-900/60 p-1 mb-8 border border-white/5">
-      <button id="tab-login" class="flex-1 py-2 text-center text-sm font-semibold rounded-full bg-accent-teal text-white transition-all duration-300">
-        Sign In
-      </button>
-      <button id="tab-register" class="flex-1 py-2 text-center text-sm font-semibold rounded-full text-gray-400 hover:text-white transition-all duration-300">
-        Sign Up
-      </button>
+  <a href="index.html" class="back-link">← Back to Home</a>
+
+  <div class="auth-card">
+    <div class="auth-logo">
+      <span class="text-gradient-gold">Echo</span><span style="color:#fff">Reads</span>
     </div>
 
-    <!-- Title and Description -->
-    <h1 id="auth-title" class="text-2xl font-bold text-white text-center mb-1">Welcome Back</h1>
-    <p id="auth-desc" class="text-sm text-gray-400 text-center mb-6">Sign in to continue exploring your library</p>
+    <!-- Tab Toggle -->
+    <div class="tab-toggle">
+      <button class="tab-btn active" id="tab-login">Sign In</button>
+      <button class="tab-btn" id="tab-register">Sign Up</button>
+    </div>
 
-    <!-- Form -->
-    <form id="auth-form" class="space-y-5">
-      <!-- Name field (shown only for register) -->
-      <div id="name-field" class="hidden">
-        <label class="block text-sm text-gray-300 mb-1.5 font-medium">Full Name</label>
-        <input id="name" type="text" class="w-full bg-slate-900/50 border border-slate-700/80 focus:border-accent-teal focus:ring-1 focus:ring-accent-teal rounded-xl px-4 py-3 text-white outline-none transition" placeholder="John Doe" />
+    <h1 id="auth-title" style="font-size:1.4rem;font-weight:800;text-align:center;margin-bottom:4px;">Welcome Back</h1>
+    <p id="auth-desc" style="text-align:center;color:var(--color-text-secondary);font-size:.85rem;margin-bottom:24px;">Sign in to continue exploring your library</p>
+
+    <form id="auth-form" class="auth-form">
+      <!-- Name field (register only) -->
+      <div class="form-group" id="name-field" style="display:none;">
+        <label for="name">Full Name</label>
+        <input id="name" type="text" placeholder="Your full name" />
       </div>
 
-      <!-- Email field -->
-      <div>
-        <label class="block text-sm text-gray-300 mb-1.5 font-medium">Email Address</label>
-        <input id="email" type="email" required class="w-full bg-slate-900/50 border border-slate-700/80 focus:border-accent-teal focus:ring-1 focus:ring-accent-teal rounded-xl px-4 py-3 text-white outline-none transition" placeholder="you@example.com" />
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input id="email" type="email" placeholder="you@example.com" required />
       </div>
 
-      <!-- Password field -->
-      <div>
-        <label class="block text-sm text-gray-300 mb-1.5 font-medium">Password</label>
-        <input id="password" type="password" required class="w-full bg-slate-900/50 border border-slate-700/80 focus:border-accent-teal focus:ring-1 focus:ring-accent-teal rounded-xl px-4 py-3 text-white outline-none transition" placeholder="••••••••" />
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input id="password" type="password" placeholder="••••••••" required />
       </div>
 
-      <!-- Action Button -->
-      <button type="submit" id="auth-submit" class="w-full py-3.5 mt-2 bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-400 hover:to-cyan-500 text-white rounded-xl font-bold shadow-lg shadow-teal-500/10 hover:shadow-teal-500/20 transform hover:-translate-y-0.5 transition duration-200">
-        Sign In
-      </button>
+      <button type="submit" id="auth-submit" class="submit-btn">Sign In</button>
     </form>
 
-    <p id="msg" class="text-sm text-center font-medium mt-4 min-h-[1.5rem]"></p>
+    <p id="msg" class="msg-text"></p>
   </div>
 
   <script>
     const API_BASE = '/api/auth';
     let mode = 'login';
 
-    const tabLogin = document.getElementById('tab-login');
+    const tabLogin    = document.getElementById('tab-login');
     const tabRegister = document.getElementById('tab-register');
-    const authTitle = document.getElementById('auth-title');
-    const authDesc = document.getElementById('auth-desc');
-    const nameField = document.getElementById('name-field');
-    const authSubmit = document.getElementById('auth-submit');
-    const authForm = document.getElementById('auth-form');
-    const msg = document.getElementById('msg');
-
-    const nameInput = document.getElementById('name');
-    const emailInput = document.getElementById('email');
-    const passwordInput = document.getElementById('password');
+    const authTitle   = document.getElementById('auth-title');
+    const authDesc    = document.getElementById('auth-desc');
+    const nameField   = document.getElementById('name-field');
+    const nameInput   = document.getElementById('name');
+    const authSubmit  = document.getElementById('auth-submit');
+    const authForm    = document.getElementById('auth-form');
+    const msg         = document.getElementById('msg');
 
     function switchMode(newMode) {
       mode = newMode;
       msg.textContent = '';
+      msg.className = 'msg-text';
       if (mode === 'login') {
-        tabLogin.className = 'flex-1 py-2 text-center text-sm font-semibold rounded-full bg-accent-teal text-white transition-all duration-300';
-        tabRegister.className = 'flex-1 py-2 text-center text-sm font-semibold rounded-full text-gray-400 hover:text-white transition-all duration-300';
+        tabLogin.classList.add('active');
+        tabRegister.classList.remove('active');
         authTitle.textContent = 'Welcome Back';
         authDesc.textContent = 'Sign in to continue exploring your library';
-        nameField.classList.add('hidden');
+        nameField.style.display = 'none';
         nameInput.required = false;
         authSubmit.textContent = 'Sign In';
       } else {
-        tabRegister.className = 'flex-1 py-2 text-center text-sm font-semibold rounded-full bg-accent-teal text-white transition-all duration-300';
-        tabLogin.className = 'flex-1 py-2 text-center text-sm font-semibold rounded-full text-gray-400 hover:text-white transition-all duration-300';
+        tabRegister.classList.add('active');
+        tabLogin.classList.remove('active');
         authTitle.textContent = 'Create Account';
-        authDesc.textContent = 'Join EchoReads and build your library';
-        nameField.classList.remove('hidden');
+        authDesc.textContent = 'Join EchoReads and build your literary universe';
+        nameField.style.display = 'flex';
         nameInput.required = true;
         authSubmit.textContent = 'Create Account';
       }
     }
 
-    tabLogin.addEventListener('click', () => switchMode('login'));
+    tabLogin.addEventListener('click',    () => switchMode('login'));
     tabRegister.addEventListener('click', () => switchMode('register'));
 
     authForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      msg.className = 'text-sm text-center font-medium mt-4 text-cyan-400';
-      msg.textContent = mode === 'login' ? 'Signing in...' : 'Creating account...';
+      authSubmit.disabled = true;
+      msg.className = 'msg-text msg-info';
+      msg.textContent = mode === 'login' ? 'Signing in…' : 'Creating account…';
 
-      const email = emailInput.value.trim();
-      const password = passwordInput.value;
-      const payload = { email, password };
-
-      if (mode === 'register') {
-        payload.name = nameInput.value.trim();
-      }
+      const payload = {
+        email: document.getElementById('email').value.trim(),
+        password: document.getElementById('password').value,
+      };
+      if (mode === 'register') payload.name = nameInput.value.trim();
 
       const endpoint = mode === 'login' ? `${API_BASE}/login` : `${API_BASE}/register`;
-
       try {
         const response = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-        
         const data = await response.json();
-        
-        if (!response.ok || !data.success) {
-          throw new Error(data.message || 'Authentication failed');
-        }
+        if (!response.ok || !data.success) throw new Error(data.message || 'Authentication failed');
 
         localStorage.setItem('echoreads_token', data.data.token);
         localStorage.setItem('echoreads_user', JSON.stringify(data.data.user));
 
-        msg.className = 'text-sm text-center font-medium mt-4 text-emerald-400';
-        msg.textContent = mode === 'login' ? 'Signed in successfully. Redirecting...' : 'Registered successfully. Redirecting...';
-        
-        setTimeout(() => {
-          window.location.href = 'index.html';
-        }, 700);
-
+        msg.className = 'msg-text msg-success';
+        msg.textContent = mode === 'login' ? '✓ Signed in! Redirecting…' : '✓ Account created! Redirecting…';
+        setTimeout(() => { window.location.href = 'index.html'; }, 700);
       } catch (err) {
-        msg.className = 'text-sm text-center font-medium mt-4 text-rose-400';
+        msg.className = 'msg-text msg-error';
         msg.textContent = err.message || 'An error occurred. Please try again.';
+        authSubmit.disabled = false;
       }
     });
   </script>

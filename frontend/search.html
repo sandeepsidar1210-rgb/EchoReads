@@ -3,85 +3,154 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Search - EchoReads</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>body{background:radial-gradient(at 70% 30%, #171730, #0a0a1a);color:#e2e8f0;font-family:Inter,system-ui,sans-serif}</style>
+  <title>Search Books — EchoReads</title>
+  <meta name="description" content="Search our full e-book catalog by title or author on EchoReads." />
+  <link rel="stylesheet" href="css/shared.css" />
+  <script src="js/shared.js" defer></script>
   <script src="js/main.js"></script>
+  <style>
+    .search-results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 24px;
+    }
+    .search-card {
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      transition: transform var(--transition-base), border-color var(--transition-base), box-shadow var(--transition-base);
+    }
+    .search-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--color-border-hover);
+      box-shadow: var(--shadow-card-hover);
+    }
+    .search-card img { width: 100%; height: 220px; object-fit: cover; }
+
+    .hero-search-bar {
+      max-width: 640px;
+      display: flex;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+      transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+      margin-bottom: 12px;
+    }
+    .hero-search-bar:focus-within {
+      border-color: var(--color-teal);
+      box-shadow: 0 0 0 3px rgba(34,211,238,0.1);
+    }
+    .hero-search-bar input {
+      flex: 1; background: transparent; border: none; outline: none;
+      padding: 14px 20px; color: var(--color-text-primary);
+      font-size: .9rem; font-family: 'Inter', sans-serif;
+    }
+    .hero-search-bar input::placeholder { color: var(--color-text-muted); }
+    .hero-search-bar button {
+      padding: 12px 28px; background: var(--gradient-teal); color: #000;
+      font-weight: 700; font-size: .85rem; border: none; cursor: pointer;
+      transition: filter var(--transition-fast);
+    }
+    .hero-search-bar button:hover { filter: brightness(1.1); }
+  </style>
 </head>
-<body class="min-h-screen">
-  <header class="border-b border-slate-800/80 bg-slate-900/40 sticky top-0 z-40">
-    <div class="container mx-auto px-6 py-4 flex items-center justify-between">
-      <div class="flex items-center space-x-4">
-        <button onclick="window.location.href='index.html'" class="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded">Back to Home Page</button>
-        <a href="index.html" class="text-2xl font-bold text-amber-400">Echo<span class="text-white">Reads</span></a>
+<body>
+<div class="er-page">
+  <main style="padding: 40px 32px 80px; max-width: 1280px; margin: 0 auto; flex: 1;">
+
+    <!-- Page Header -->
+    <div style="margin-bottom: 32px;">
+      <div class="er-badge er-badge-teal" style="margin-bottom:12px;display:inline-flex;">🔍 Full Catalog Search</div>
+      <h1 style="font-family:'Space Grotesk',sans-serif;font-size:clamp(2rem,4vw,3rem);font-weight:900;margin-bottom:8px;letter-spacing:-0.5px;">Search Books</h1>
+      <p style="color:var(--color-text-secondary);font-size:.9rem;margin-bottom:24px;">Search by title or author across our entire catalog.</p>
+
+      <div class="hero-search-bar">
+        <input id="q" type="text" placeholder="Search by title, author, or keyword…" />
+        <button id="go">Search</button>
       </div>
-      <nav class="space-x-6 text-gray-300">
-        <a class="hover:text-white" href="browse.html">Browse</a>
-        <a class="hover:text-white" href="genres.html">Genres</a>
-        <a class="hover:text-white" href="cart.html">Cart</a>
-        <a class="hover:text-white" href="novia.html">Novia AI</a>
-      </nav>
+      <p id="result-count" style="font-size:.8rem;color:var(--color-text-muted);"></p>
     </div>
-  </header>
-  <main class="container mx-auto px-6 py-10">
-    <h1 class="text-4xl font-extrabold text-white">Search</h1>
-    <p class="text-gray-400">Search by title or author.</p>
-    <div class="mt-6 flex gap-2 max-w-xl">
-      <input id="q" class="flex-1 bg-gray-700 rounded px-4 py-2 text-white" placeholder="Type to search..." />
-      <button id="go" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-500">Search</button>
+
+    <!-- Results -->
+    <div id="results" class="search-results-grid"></div>
+
+    <!-- Empty / No results -->
+    <div id="no-results" style="display:none;text-align:center;padding:60px 24px;color:var(--color-text-secondary);">
+      <p style="font-size:3rem;margin-bottom:12px;">🔍</p>
+      <p style="font-size:1rem;font-weight:600;color:var(--color-text-primary);">No results found</p>
+      <p style="font-size:.85rem;margin-top:6px;">Try a different title or author name.</p>
     </div>
-    <div id="results" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-8"></div>
-    
-    <!-- Unified Details Modal Viewport -->
-    <div id="book-details-modal" class="relative z-50"></div>
+
+    <!-- Modal viewport -->
+    <div id="book-details-modal" style="position:relative;z-index:50;"></div>
   </main>
-  
-  <script>
-    const API='/api/books';
-    const token = localStorage.getItem('echoreads_token');
-    
-    async function fetchAll(){ 
-      const r = await fetch(API, {
-        headers: { 'Authorization': token ? `Bearer ${token}` : '' }
-      }); 
-      const d = await r.json(); 
-      return d.data || []; 
-    }
+</div>
 
-    function card(b){
-      return `
-        <div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg border border-gray-700/50 hover:border-cyan-500/30 transition duration-300">
-          <img src="${b.imageUrl}" class="w-full h-48 object-cover"/>
-          <div class="p-4 flex flex-col justify-between h-[160px]">
-            <div>
-              <h3 class="text-base font-semibold text-white truncate">${b.title}</h3>
-              <p class="text-xs text-gray-405 text-gray-400 truncate mb-2">${b.author}</p>
-            </div>
-            <div>
-              <div class="flex items-center justify-between text-xs border-t border-gray-700/50 pt-2 mb-3">
-                <span class="text-emerald-400 font-extrabold text-sm">$${b.price.toFixed(2)}</span>
-                <span class="text-gray-500">★ ${b.rating}</span>
-              </div>
-              <button onclick="showBookDetails('${b._id}')" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold py-2 rounded-lg transition duration-200">
-                View Book Details
-              </button>
-            </div>
+<script>
+  const token = localStorage.getItem('echoreads_token');
+  const API = '/api/books';
+
+  async function fetchAll() {
+    const res = await fetch(API, {
+      headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+    });
+    const d = await res.json();
+    return d.data || [];
+  }
+
+  function card(b) {
+    return `
+      <div class="search-card er-reveal">
+        <div style="overflow:hidden;height:220px;">
+          <img src="${b.imageUrl || 'https://placehold.co/220x220/0d0d1f/fff?text=Book'}" alt="${b.title}" style="width:100%;height:100%;object-fit:cover;transition:transform .4s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" />
+        </div>
+        <div style="padding:16px;">
+          <div class="er-badge er-badge-teal" style="margin-bottom:8px;font-size:.65rem;">${b.genre || 'General'}</div>
+          <h3 style="font-size:.9rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px;">${b.title}</h3>
+          <p style="font-size:.78rem;color:var(--color-text-secondary);margin-bottom:10px;">by ${b.author}</p>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <span style="font-size:1rem;font-weight:800;color:var(--color-gold);">$${b.price.toFixed(2)}</span>
+            <span style="font-size:.78rem;color:var(--color-text-secondary);">⭐ ${b.rating}</span>
           </div>
-        </div>`;
-    }
+          <button onclick="showBookDetails('${b._id}')" class="er-btn er-btn-teal er-btn-sm" style="width:100%;justify-content:center;">View Details</button>
+        </div>
+      </div>`;
+  }
 
-    async function search(){
-      const q=document.getElementById('q').value.toLowerCase();
-      const all=await fetchAll();
-      const filtered=all.filter(b=> b.title.toLowerCase().includes(q) || b.author.toLowerCase().includes(q));
-      document.getElementById('results').innerHTML=filtered.map(card).join('')||'<div class="text-gray-400">No results.</div>';
-    }
+  async function search() {
+    const q = document.getElementById('q').value.toLowerCase().trim();
+    document.getElementById('results').innerHTML = `
+      <div class="er-skeleton" style="height:300px;border-radius:var(--radius-xl);"></div>
+      <div class="er-skeleton" style="height:300px;border-radius:var(--radius-xl);"></div>
+      <div class="er-skeleton" style="height:300px;border-radius:var(--radius-xl);"></div>`;
+    document.getElementById('no-results').style.display = 'none';
 
-    document.getElementById('go').onclick=search; 
-    document.getElementById('q').addEventListener('keypress',e=>{if(e.key==='Enter')search();});
-    
-    // Perform initial blank search to populate suggestions on page load
-    search();
-  </script>
+    const all = await fetchAll();
+    const filtered = q
+      ? all.filter(b => b.title.toLowerCase().includes(q) || b.author.toLowerCase().includes(q))
+      : all;
+
+    const count = document.getElementById('result-count');
+    count.textContent = q ? `${filtered.length} result${filtered.length !== 1 ? 's' : ''} for "${q}"` : `${all.length} books in catalog`;
+
+    if (!filtered.length) {
+      document.getElementById('results').innerHTML = '';
+      document.getElementById('no-results').style.display = 'block';
+      return;
+    }
+    document.getElementById('results').innerHTML = filtered.map(card).join('');
+    document.querySelectorAll('.er-reveal:not(.visible)').forEach(el => el.classList.add('visible'));
+  }
+
+  document.getElementById('go').onclick = search;
+  document.getElementById('q').addEventListener('keypress', e => { if (e.key === 'Enter') search(); });
+
+  // Pre-fill query from URL param
+  const urlQ = new URLSearchParams(window.location.search).get('q');
+  if (urlQ) document.getElementById('q').value = urlQ;
+  search();
+</script>
 </body>
 </html>
