@@ -224,6 +224,193 @@
     counters.forEach(el => io.observe(el));
   }
 
+  // ── Toast Notification ────────────────────────────────────
+  window.showToast = function(msg, isError = false) {
+    const t = document.createElement('div');
+    t.style.cssText = `position:fixed;bottom:28px;right:28px;z-index:9999;padding:12px 20px;border-radius:var(--radius-md);font-size:.85rem;font-weight:600;
+      background:${isError ? 'rgba(244,63,94,0.15)' : 'rgba(16,185,129,0.15)'};
+      border:1px solid ${isError ? 'rgba(244,63,94,0.4)' : 'rgba(16,185,129,0.4)'};
+      color:${isError ? 'var(--color-rose)' : 'var(--color-emerald)'};
+      backdrop-filter:blur(12px);transition:opacity 0.3s;`;
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 3000);
+  };
+
+  // ── Global Book Details Modal ─────────────────────────────
+  window.showBookDetails = async function(bookId) {
+    let modal = document.getElementById('er-global-book-modal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'er-global-book-modal';
+      document.body.appendChild(modal);
+    }
+
+    modal.innerHTML = `
+      <div class="er-modal-overlay" onclick="window.closeBookDetails(event)">
+        <div class="er-modal-box" onclick="event.stopPropagation()">
+          <button onclick="window.closeBookDetails()" class="er-modal-close">✕</button>
+          <div style="display:grid;grid-template-columns:200px 1fr;gap:24px;align-items:start;">
+            <div class="er-skeleton" style="width:200px;height:280px;border-radius:var(--radius-lg);"></div>
+            <div>
+              <div class="er-skeleton" style="height:20px;width:120px;margin-bottom:12px;"></div>
+              <div class="er-skeleton" style="height:32px;width:260px;margin-bottom:8px;"></div>
+              <div class="er-skeleton" style="height:18px;width:100px;margin-bottom:20px;"></div>
+              <div class="er-skeleton" style="height:100px;width:100%;"></div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+
+    const token = getToken();
+    try {
+      const res = await fetch(`/api/books/${bookId}`, {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error();
+      const book = data.data;
+
+      // Check if book has a pdfUrl or standard free fallback
+      const pdfLink = book.pdfUrl || 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf';
+
+      modal.innerHTML = `
+        <div class="er-modal-overlay" onclick="window.closeBookDetails(event)">
+          <div class="er-modal-box" onclick="event.stopPropagation()">
+            <button onclick="window.closeBookDetails()" class="er-modal-close">✕</button>
+            <div style="display:grid;grid-template-columns:220px 1fr;gap:32px;align-items:start;flex-wrap:wrap;">
+              <img src="${book.imageUrl || ''}" alt="${book.title}" style="width:100%;border-radius:var(--radius-lg);box-shadow:var(--shadow-card);" />
+              <div>
+                <span class="er-badge er-badge-teal" style="margin-bottom:12px;display:inline-flex;">${book.genre}</span>
+                <h2 style="font-size:1.8rem;font-weight:900;margin-bottom:6px;letter-spacing:-0.3px;">${book.title}</h2>
+                <p style="color:var(--color-text-secondary);margin-bottom:16px;">by <strong style="color:var(--color-text-primary);">${book.author}</strong></p>
+                <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
+                  <span style="color:var(--color-gold);">⭐ ${book.rating}</span>
+                  <span style="color:var(--color-text-muted);font-size:.8rem;">${book.totalRatings} ratings</span>
+                </div>
+                <h4 style="font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-muted);margin-bottom:8px;">Summary</h4>
+                <p style="font-size:.875rem;color:var(--color-text-secondary);line-height:1.75;margin-bottom:24px;">${book.summary || book.description || 'No summary available.'}</p>
+                
+                <div style="display:flex;align-items:center;justify-content:space-between;padding-top:20px;border-top:1px solid var(--color-border);flex-wrap:wrap;gap:16px;">
+                  <span style="font-size:2rem;font-weight:900;color:var(--color-gold);">$${book.price.toFixed(2)}</span>
+                  <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                    <a href="${pdfLink}" target="_blank" class="er-btn er-btn-outline" style="border-color:var(--color-emerald);color:var(--color-emerald);">Download PDF (Free)</a>
+                    <button onclick="window.addBookToCart('${book._id}', '${book.title.replace(/'/g,"\\'")}'); window.closeBookDetails();" class="er-btn er-btn-outline">Add to Cart</button>
+                    <button onclick="window.openPurchase('${book._id}','${book.title.replace(/'/g,"\\'")}',${book.price}); window.closeBookDetails();" class="er-btn er-btn-primary">Buy Now</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>`;
+    } catch(err) {
+      window.showToast('Failed to load book details', true);
+      modal.innerHTML = '';
+    }
+  };
+
+  window.closeBookDetails = function(event) {
+    if (event && event.target !== event.currentTarget) return;
+    const modal = document.getElementById('er-global-book-modal');
+    if (modal) modal.innerHTML = '';
+  };
+
+  // ── Global Add to Cart ────────────────────────────────────
+  window.addBookToCart = async function(bookId, title) {
+    const token = getToken();
+    if (!token) {
+      window.showToast('Please sign in to add items to cart.', true);
+      setTimeout(() => { window.location.href = 'signin.html'; }, 1000);
+      return;
+    }
+    try {
+      const r = await fetch('/api/cart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ bookId, quantity: 1 })
+      });
+      const d = await r.json();
+      if (!d.success) throw new Error();
+      window.showToast(`✓ "${title}" added to cart`);
+      fetchCartCount(); // update nav badge count dynamically
+    } catch { window.showToast('Failed to add to cart', true); }
+  };
+
+  // ── Global Direct Purchase Modal ──────────────────────────
+  window.openPurchase = function(bookId, title, price) {
+    const token = getToken();
+    if (!token) {
+      window.showToast('Please sign in to make a purchase.', true);
+      setTimeout(() => { window.location.href = 'signin.html'; }, 1000);
+      return;
+    }
+    let modal = document.getElementById('er-global-purchase-modal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'er-global-purchase-modal';
+      document.body.appendChild(modal);
+    }
+    modal.innerHTML = `
+      <div class="er-modal-overlay" onclick="window.closePurchase(event)">
+        <div class="er-modal-box" style="max-width:480px;" onclick="event.stopPropagation()">
+          <button onclick="window.closePurchase()" class="er-modal-close">✕</button>
+          <h3 style="font-size:1.3rem;font-weight:900;margin-bottom:20px;">Purchase Book</h3>
+          <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:16px;margin-bottom:24px;">
+            <p style="font-weight:700;margin-bottom:4px;">${title}</p>
+            <p style="font-size:1.6rem;font-weight:900;color:var(--color-gold);">$${price.toFixed(2)}</p>
+          </div>
+          <form id="purchase-form" style="display:flex;flex-direction:column;gap:16px;">
+            <div>
+              <label style="font-size:.8rem;font-weight:600;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px;">Full Name</label>
+              <input type="text" id="purchase-name" class="er-input" required />
+            </div>
+            <div>
+              <label style="font-size:.8rem;font-weight:600;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px;">Address</label>
+              <textarea id="purchase-address" rows="2" class="er-input" style="resize:none;" required></textarea>
+            </div>
+            <div>
+              <label style="font-size:.8rem;font-weight:600;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px;">Pincode</label>
+              <input type="text" id="purchase-pincode" class="er-input" required />
+            </div>
+            <div>
+              <label style="font-size:.8rem;font-weight:600;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;display:block;">Payment Method</label>
+              <div style="display:flex;gap:12px;">
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.875rem;"><input type="radio" name="payment-method" value="UPI" /> UPI</label>
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.875rem;"><input type="radio" name="payment-method" value="Cash on Delivery" checked /> Cash on Delivery</label>
+              </div>
+            </div>
+            <button type="submit" class="er-btn er-btn-primary" style="justify-content:center;padding:14px;">Complete Purchase</button>
+          </form>
+        </div>
+      </div>`;
+    modal.querySelector('#purchase-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        const r = await fetch('/api/purchases', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({
+            bookId, price,
+            name: document.getElementById('purchase-name').value,
+            address: document.getElementById('purchase-address').value,
+            pincode: document.getElementById('purchase-pincode').value,
+            paymentMethod: document.querySelector('input[name="payment-method"]:checked').value
+          })
+        });
+        const d = await r.json();
+        if (!d.success) throw new Error(d.message || 'Purchase failed');
+        window.closePurchase();
+        window.showToast('✓ Purchase successful! Book added to your library.');
+      } catch (err) { window.showToast('Purchase failed: ' + err.message, true); }
+    });
+  };
+
+  window.closePurchase = function(event) {
+    if (event && event.target !== event.currentTarget) return;
+    const modal = document.getElementById('er-global-purchase-modal');
+    if (modal) modal.innerHTML = '';
+  };
+
   // ── Boot ─────────────────────────────────────────────────
   document.addEventListener('DOMContentLoaded', () => {
     injectNavbar();

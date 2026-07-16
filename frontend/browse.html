@@ -136,13 +136,6 @@
 
   <!-- Book Details Modal -->
   <div id="book-details-modal"></div>
-
-  <!-- Purchase Modal -->
-  <div id="purchase-modal"></div>
-
-</div>
-
-<script src="js/main.js"></script>
 <script>
   const token = localStorage.getItem('echoreads_token');
   const API_BASE_URL = '/api';
@@ -172,12 +165,12 @@
     noResults.style.display = 'none';
     container.innerHTML = books.map(book => `
       <div class="browse-book-card er-reveal">
-        <div style="overflow:hidden;height:260px;">
+        <div style="overflow:hidden;height:260px;cursor:pointer;" onclick="window.showBookDetails('${book._id}')">
           <img src="${book.imageUrl || 'https://placehold.co/240x260/0d0d1f/fff?text=Book'}" alt="${book.title}" />
         </div>
         <div class="browse-book-card-body">
           <div class="er-badge er-badge-teal" style="margin-bottom:10px;font-size:.68rem;">${book.genre || 'General'}</div>
-          <h3 style="font-size:.95rem;font-weight:700;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${book.title}</h3>
+          <h3 style="font-size:.95rem;font-weight:700;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;" onclick="window.showBookDetails('${book._id}')">${book.title}</h3>
           <p style="font-size:.8rem;color:var(--color-text-secondary);margin-bottom:10px;">by ${book.author}</p>
           <p style="font-size:.78rem;color:var(--color-text-secondary);line-height:1.6;margin-bottom:14px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${book.description || ''}</p>
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
@@ -185,8 +178,8 @@
             <span style="font-size:.78rem;color:var(--color-text-secondary);">⭐ ${book.rating} (${book.totalRatings})</span>
           </div>
           <div style="display:flex;gap:8px;">
-            <button onclick="showBookDetails('${book._id}')" class="er-btn er-btn-outline er-btn-sm" style="flex:1;justify-content:center;">Details</button>
-            <button onclick="openPurchase('${book._id}','${book.title.replace(/'/g,"\\'")}', ${book.price})" class="er-btn er-btn-primary er-btn-sm" style="flex:1;justify-content:center;">Buy Now</button>
+            <button onclick="window.showBookDetails('${book._id}')" class="er-btn er-btn-outline er-btn-sm" style="flex:1;justify-content:center;">Details</button>
+            <button onclick="window.openPurchase('${book._id}','${book.title.replace(/'/g,"\\'")}', ${book.price})" class="er-btn er-btn-primary er-btn-sm" style="flex:1;justify-content:center;">Buy Now</button>
           </div>
         </div>
       </div>
@@ -194,144 +187,6 @@
 
     // re-trigger scroll reveal
     document.querySelectorAll('.er-reveal:not(.visible)').forEach(el => el.classList.add('visible'));
-  }
-
-  async function showBookDetails(bookId) {
-    const modal = document.getElementById('book-details-modal');
-    modal.innerHTML = `<div class="er-modal-overlay"><div class="er-modal-box"><div class="er-skeleton" style="height:200px;border-radius:12px;"></div></div></div>`;
-    try {
-      const res = await fetch(`${API_BASE_URL}/books/${bookId}`, {
-        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-      });
-      const data = await res.json();
-      if (!data.success) throw new Error();
-      const book = data.data;
-      modal.innerHTML = `
-        <div class="er-modal-overlay" onclick="closeBookDetails(event)">
-          <div class="er-modal-box" onclick="event.stopPropagation()">
-            <button onclick="closeBookDetails()" class="er-modal-close">✕</button>
-            <div style="display:grid;grid-template-columns:220px 1fr;gap:32px;align-items:start;">
-              <img src="${book.imageUrl || ''}" alt="${book.title}" style="width:100%;border-radius:var(--radius-lg);box-shadow:var(--shadow-card);" />
-              <div>
-                <span class="er-badge er-badge-teal" style="margin-bottom:12px;display:inline-flex;">${book.genre}</span>
-                <h2 style="font-size:1.8rem;font-weight:900;margin-bottom:6px;letter-spacing:-0.3px;">${book.title}</h2>
-                <p style="color:var(--color-text-secondary);margin-bottom:16px;">by <strong style="color:var(--color-text-primary);">${book.author}</strong></p>
-                <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
-                  <span style="color:var(--color-gold);">⭐ ${book.rating}</span>
-                  <span style="color:var(--color-text-muted);font-size:.8rem;">${book.totalRatings} ratings</span>
-                </div>
-                <h4 style="font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-muted);margin-bottom:8px;">Summary</h4>
-                <p style="font-size:.875rem;color:var(--color-text-secondary);line-height:1.75;margin-bottom:20px;">${book.summary || book.description || ''}</p>
-                <div style="display:flex;align-items:center;justify-content:space-between;padding-top:20px;border-top:1px solid var(--color-border);">
-                  <span style="font-size:2rem;font-weight:900;color:var(--color-gold);">$${book.price.toFixed(2)}</span>
-                  <div style="display:flex;gap:10px;">
-                    <button onclick="addToCart('${book._id}', '${book.title.replace(/'/g,"\\'")}'); closeBookDetails();" class="er-btn er-btn-outline">Add to Cart</button>
-                    <button onclick="openPurchase('${book._id}','${book.title.replace(/'/g,"\\'")}',${book.price}); closeBookDetails();" class="er-btn er-btn-primary">Buy Now</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>`;
-    } catch {
-      modal.innerHTML = '';
-    }
-  }
-
-  function closeBookDetails(event) {
-    if (event && event.target !== event.currentTarget) return;
-    document.getElementById('book-details-modal').innerHTML = '';
-  }
-
-  async function addToCart(bookId, title) {
-    if (!token) { alert('Please sign in first.'); window.location.href = 'signin.html'; return; }
-    try {
-      const r = await fetch('/api/cart', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ bookId, quantity: 1 })
-      });
-      const d = await r.json();
-      if (!d.success) throw new Error();
-      // Show toast
-      showToast(`✓ "${title}" added to cart`);
-    } catch { showToast('Failed to add to cart', true); }
-  }
-
-  function showToast(msg, isError = false) {
-    const t = document.createElement('div');
-    t.style.cssText = `position:fixed;bottom:28px;right:28px;z-index:9999;padding:12px 20px;border-radius:var(--radius-md);font-size:.85rem;font-weight:600;
-      background:${isError ? 'rgba(244,63,94,0.15)' : 'rgba(16,185,129,0.15)'};
-      border:1px solid ${isError ? 'rgba(244,63,94,0.4)' : 'rgba(16,185,129,0.4)'};
-      color:${isError ? 'var(--color-rose)' : 'var(--color-emerald)'};
-      backdrop-filter:blur(12px);transition:opacity 0.3s;`;
-    t.textContent = msg;
-    document.body.appendChild(t);
-    setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 2500);
-  }
-
-  function openPurchase(bookId, title, price) {
-    const u = JSON.parse(localStorage.getItem('echoreads_user') || 'null');
-    if (!u) { alert('Please sign in first.'); window.location.href = 'signin.html'; return; }
-    const modal = document.getElementById('purchase-modal');
-    modal.innerHTML = `
-      <div class="er-modal-overlay" onclick="closePurchase(event)">
-        <div class="er-modal-box" style="max-width:480px;" onclick="event.stopPropagation()">
-          <button onclick="closePurchase()" class="er-modal-close">✕</button>
-          <h3 style="font-size:1.3rem;font-weight:900;margin-bottom:20px;">Purchase Book</h3>
-          <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:16px;margin-bottom:24px;">
-            <p style="font-weight:700;margin-bottom:4px;">${title}</p>
-            <p style="font-size:1.6rem;font-weight:900;color:var(--color-gold);">$${price.toFixed(2)}</p>
-          </div>
-          <form id="purchase-form" style="display:flex;flex-direction:column;gap:16px;">
-            <div>
-              <label style="font-size:.8rem;font-weight:600;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px;">Full Name</label>
-              <input type="text" id="purchase-name" class="er-input" required />
-            </div>
-            <div>
-              <label style="font-size:.8rem;font-weight:600;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px;">Address</label>
-              <textarea id="purchase-address" rows="2" class="er-input" style="resize:none;" required></textarea>
-            </div>
-            <div>
-              <label style="font-size:.8rem;font-weight:600;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px;">Pincode</label>
-              <input type="text" id="purchase-pincode" class="er-input" required />
-            </div>
-            <div>
-              <label style="font-size:.8rem;font-weight:600;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;display:block;">Payment Method</label>
-              <div style="display:flex;gap:12px;">
-                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.875rem;"><input type="radio" name="payment-method" value="UPI" /> UPI</label>
-                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.875rem;"><input type="radio" name="payment-method" value="Cash on Delivery" checked /> Cash on Delivery</label>
-              </div>
-            </div>
-            <button type="submit" class="er-btn er-btn-primary" style="justify-content:center;padding:14px;">Complete Purchase</button>
-          </form>
-        </div>
-      </div>`;
-    modal.querySelector('#purchase-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      try {
-        const r = await fetch('/api/purchases', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({
-            bookId, price,
-            name: document.getElementById('purchase-name').value,
-            address: document.getElementById('purchase-address').value,
-            pincode: document.getElementById('purchase-pincode').value,
-            paymentMethod: document.querySelector('input[name="payment-method"]:checked').value
-          })
-        });
-        const d = await r.json();
-        if (!d.success) throw new Error(d.message || 'Purchase failed');
-        closePurchase();
-        showToast('✓ Purchase successful! Book added to your library.');
-      } catch (err) { showToast('Purchase failed: ' + err.message, true); }
-    });
-  }
-  function closePurchase(event) {
-    if (event && event.target !== event.currentTarget) return;
-    const m = document.getElementById('purchase-modal');
-    m.innerHTML = '';
   }
 
   async function initGenreFilters() {
