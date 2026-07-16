@@ -45,13 +45,6 @@
     }
     .sort-select:focus { border-color: var(--color-teal); }
 
-    /* Book cards */
-    .browse-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 24px;
-    }
-
     .browse-book-card {
       background: var(--color-bg-card);
       border: 1px solid var(--color-border);
@@ -103,7 +96,7 @@
 <div class="er-page">
 
   <!-- Browse Header Section -->
-  <section style="padding: 40px 32px 0; max-width: 1280px; margin: 0 auto;">
+  <div class="er-container" style="padding-top:40px;">
     <h1 style="font-family:'Space Grotesk',sans-serif;font-size:clamp(1.8rem,4vw,2.8rem);font-weight:900;margin-bottom:6px;">
       Browse Books
     </h1>
@@ -123,11 +116,11 @@
         </select>
       </div>
     </div>
-  </section>
+  </div>
 
   <!-- Books Grid -->
-  <section style="padding: 0 32px 80px; max-width: 1280px; margin: 0 auto;">
-    <div id="books-container" class="browse-grid">
+  <div class="er-container" style="padding-bottom:80px;">
+    <div id="books-container" class="er-grid-4">
       <!-- Skeleton loaders -->
       <div class="er-skeleton" style="height:360px;border-radius:var(--radius-xl);"></div>
       <div class="er-skeleton" style="height:360px;border-radius:var(--radius-xl);"></div>
@@ -139,7 +132,7 @@
       <p style="font-size:1.1rem;font-weight:600;color:var(--color-text-primary);">No books found</p>
       <p style="font-size:.85rem;margin-top:6px;">Try a different genre or sort order.</p>
     </div>
-  </section>
+  </div>
 
   <!-- Book Details Modal -->
   <div id="book-details-modal"></div>

@@ -131,13 +131,17 @@ h1, h2, h3, h4 {
   display: flex;
   align-items: center;
   padding: 0 32px;
+  background: rgba(5, 5, 15, 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
   transition: background var(--transition-base), box-shadow var(--transition-base);
 }
 
 #er-navbar.scrolled {
-  background: rgba(5, 5, 15, 0.88);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgba(5, 5, 15, 0.94);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   box-shadow: var(--shadow-navbar);
 }
 
@@ -611,7 +615,76 @@ h1, h2, h3, h4 {
 /* ============================================================
    PAGE WRAPPER (accounts for fixed navbar)
    ============================================================ */
-.er-page { padding-top: var(--nav-height); min-height: 100vh; display: flex; flex-direction: column; }
+.er-page { padding-top: var(--nav-height); min-height: 100vh; display: flex; flex-direction: column; width: 100%; }
+
+/* ============================================================
+   RESPONSIVE GRID UTILITY CLASSES
+   Used on browse, search, purchases, genres pages.
+   Forces explicit column counts at each breakpoint.
+   ============================================================ */
+
+/* 4 columns on ≥1280px, 3 on ≥1024px, 2 on ≥640px, 1 on mobile */
+.er-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  width: 100%;
+}
+@media (max-width: 1280px) { .er-grid-4 { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 1024px) { .er-grid-4 { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px)  { .er-grid-4 { grid-template-columns: 1fr; } }
+
+/* 3 columns on ≥900px, 2 on ≥540px, 1 on mobile */
+.er-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  width: 100%;
+}
+@media (max-width: 1100px) { .er-grid-3 { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px)  { .er-grid-3 { grid-template-columns: 1fr; } }
+
+/* 2 columns everywhere, 1 on mobile */
+.er-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  width: 100%;
+}
+@media (max-width: 540px) { .er-grid-2 { grid-template-columns: 1fr; } }
+
+/* ============================================================
+   RESPONSIVE PADDING UTILITIES
+   ============================================================ */
+.er-container {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding-left: 32px;
+  padding-right: 32px;
+}
+@media (max-width: 768px)  { .er-container { padding-left: 20px; padding-right: 20px; } }
+@media (max-width: 480px)  { .er-container { padding-left: 16px; padding-right: 16px; } }
+
+/* ============================================================
+   MOBILE-SPECIFIC OVERRIDES
+   ============================================================ */
+@media (max-width: 768px) {
+  /* Reduce card image heights on mobile */
+  .browse-book-card img,
+  .search-card img      { height: 180px; }
+
+  /* Adjust hero text for mobile */
+  .hero-title { letter-spacing: -1px; }
+
+  /* Cart grid collapses to single column */
+  [style*="grid-template-columns:1fr 340px"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Features alternating rows become single column */
+  .feature-row { grid-template-columns: 1fr !important; }
+}
 
 /* ============================================================
    SCROLLBAR STYLING
