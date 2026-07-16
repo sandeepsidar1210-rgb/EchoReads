@@ -1,17 +1,43 @@
 const { connectDB } = require('../db');
 const Book = require('../models/Book');
-const https = require('https');
 
-function httpsGetJson(url) {
-  return new Promise((resolve, reject) => {
-    https.get(url, { headers: { 'User-Agent': 'EchoReads/1.0' } }, (response) => {
-      let data = '';
-      response.on('data', chunk => { data += chunk; });
-      response.on('end', () => {
-        try { resolve(JSON.parse(data)); } catch (e) { reject(e); }
-      });
-    }).on('error', reject);
-  });
+async function httpsGetJson(url) {
+  try {
+    const res = await fetch(url, {
+      headers: { 'User-Agent': 'EchoReads/1.0' },
+      signal: AbortSignal.timeout(4000)
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+async function fetchGutenbergText(purchaseId) {
+  if (!purchaseId) return '';
+  const url = `https://www.gutenberg.org/cache/epub/${purchaseId}/pg${purchaseId}.txt`;
+  try {
+    const res = await fetch(url, {
+      headers: { 'User-Agent': 'EchoReads/1.0' },
+      signal: AbortSignal.timeout(4000)
+    });
+    if (!res.ok) return '';
+    let text = await res.text();
+    
+    let cleanText = text;
+    const idx = cleanText.indexOf('*** START');
+    if (idx !== -1) {
+      const lineEnd = cleanText.indexOf('\n', idx);
+      if (lineEnd !== -1) cleanText = cleanText.slice(lineEnd).trim();
+    }
+    const footerIdx = cleanText.indexOf('*** END');
+    if (footerIdx !== -1) cleanText = cleanText.slice(0, footerIdx).trim();
+    
+    return cleanText.slice(0, 3000).trim();
+  } catch {
+    return '';
+  }
 }
 
 function mk(title, author, genre, summary, purchaseId=null){
@@ -20,13 +46,13 @@ function mk(title, author, genre, summary, purchaseId=null){
     title, author, genre,
     description: summary.slice(0, 160),
     summary,
-    content: summary + "\n\n" + summary + "\n\n" + summary,
+    content: summary + "\n\n" + summary + "\n\n" + summary, // fallback
     imageUrl: `https://picsum.photos/seed/${seed}/600/800.jpg`,
     price: Math.round((4.99 + Math.random()*10) * 100)/100,
     rating: Math.round((3.8 + Math.random()*1.2) * 10)/10,
     totalRatings: Math.floor(100 + Math.random()*1000),
     purchaseUrl: purchaseId ? `https://www.gutenberg.org/ebooks/${purchaseId}` : '',
-    pdfUrl: ''
+    pdfUrl: purchaseId ? `https://www.gutenberg.org/ebooks/${purchaseId}` : ''
   };
 }
 
@@ -39,7 +65,7 @@ const REALS = [
   mk('Wuthering Heights','Emily Brontë','Romance','A fierce, storm-tossed love that haunts the moors and the souls bound to them.'),
   mk('Jane Eyre','Charlotte Brontë','Romance','An orphan’s resilience leads her to independence, moral conviction, and true love.'),
   mk('Agnes Grey','Anne Brontë','Fiction','A governess faces hardship and dignity in a candid portrait of Victorian life.'),
-  mk('Great Expectations','Charles Dickens','Fiction','An orphan’s rise and reckoning with ambition, affection, and self-deception.',1400),
+  mk('Great Expectations','Charles Dickens','Fiction','A orphan’s rise and reckoning with ambition, affection, and self-deception.',1400),
   mk('Oliver Twist','Charles Dickens','Fiction','A boy endures the underbelly of London, seeking kindness and a place to belong.',730),
   mk('A Tale of Two Cities','Charles Dickens','History','Love and sacrifice unfold against the turmoil of the French Revolution.',98),
   mk('David Copperfield','Charles Dickens','Fiction','A richly-drawn journey from troubled boyhood to authorship and self-knowledge.'),
@@ -98,29 +124,44 @@ async function run(){
   console.log('Clearing existing books...');
   await Book.deleteMany({});
   
-  console.log(`Starting cover image resolution for ${REALS.length} books...`);
+  console.log(`Starting real books seeding with cover art and original Project Gutenberg text previews for ${REALS.length} books...`);
   const finalBooks = [];
   
   for (let i = 0; i < REALS.length; i++) {
     const book = REALS[i];
-    console.log(`[${i + 1}/${REALS.length}] Resolving cover for "${book.title}"...`);
-    let coverId = null;
+    console.log(`[${i + 1}/${REALS.length}] Resolving cover and text for "${book.title}"...`);
     
-    // Search with Title + Author
+    // Extract Gutenberg ID
+    const gutenbergId = book.purchaseUrl ? book.purchaseUrl.split('/').pop() : null;
+    
+    // 1. Fetch real excerpt from Project Gutenberg caches
+    if (gutenbergId) {
+      try {
+        const text = await fetchGutenbergText(gutenbergId);
+        if (text) {
+          book.content = text;
+          console.log(`  ✔ Successfully resolved real text excerpt from Project Gutenberg.`);
+        }
+      } catch (e) {
+        console.log(`  ✕ Failed to fetch Gutenberg text. Using fallback.`);
+      }
+    }
+    
+    // 2. Fetch cover image from Open Library Search API
+    let coverId = null;
     try {
       const queryUrl = `https://openlibrary.org/search.json?title=${encodeURIComponent(book.title)}&author=${encodeURIComponent(book.author)}&fields=cover_i&limit=1`;
       const data = await httpsGetJson(queryUrl);
-      if (data.docs && data.docs.length > 0 && data.docs[0].cover_i) {
+      if (data && data.docs && data.docs.length > 0 && data.docs[0].cover_i) {
         coverId = data.docs[0].cover_i;
       }
     } catch (e) {}
     
-    // Search with Title only
     if (!coverId) {
       try {
         const queryUrl = `https://openlibrary.org/search.json?title=${encodeURIComponent(book.title)}&fields=cover_i&limit=1`;
         const data = await httpsGetJson(queryUrl);
-        if (data.docs && data.docs.length > 0 && data.docs[0].cover_i) {
+        if (data && data.docs && data.docs.length > 0 && data.docs[0].cover_i) {
           coverId = data.docs[0].cover_i;
         }
       } catch (e) {}
@@ -130,16 +171,16 @@ async function run(){
       book.imageUrl = `https://covers.openlibrary.org/b/id/${coverId}-L.jpg`;
       console.log(`  ✔ Found cover: ${book.imageUrl}`);
     } else {
-      console.log(`  ✕ No cover found. Using placeholder.`);
+      console.log(`  ✕ No cover found. Using placeholder cover image.`);
     }
     
     finalBooks.push(book);
-    // Throttle requests slightly
+    // Throttle slightly to respect APIs
     await new Promise(resolve => setTimeout(resolve, 200));
   }
   
   const created = await Book.insertMany(finalBooks);
-  console.log(`Seeded ${created.length} real books with high-quality original covers.`);
+  console.log(`Seeded ${created.length} real books with high-quality covers and original Project Gutenberg text previews.`);
   process.exit(0);
 }
 
