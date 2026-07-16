@@ -36,9 +36,30 @@ router.post('/', async (req, res) => {
 router.get('/mine', async (req, res) => {
   try {
     const userId = req.user._id;
-    const items = await CartItem.find({ user: userId }).sort({ createdAt: -1 }).populate('book', 'title genre price');
-    res.json({ success: true, data: items });
+    const items = await CartItem.find({ user: userId }).sort({ createdAt: -1 }).populate('book', 'title imageUrl genre price author');
+    
+    // Filter out items with null books (orphan references due to database re-seeding)
+    const validItems = [];
+    const orphanIds = [];
+    
+    for (const item of items) {
+      if (item.book) {
+        validItems.push(item);
+      } else {
+        orphanIds.push(item._id);
+      }
+    }
+    
+    // Clean up orphans asynchronously in the background
+    if (orphanIds.length > 0) {
+      CartItem.deleteMany({ _id: { $in: orphanIds } }).catch(err => {
+        console.error('Error deleting orphan cart items:', err);
+      });
+    }
+    
+    res.json({ success: true, data: validItems });
   } catch (err) {
+    console.error('Error listing cart:', err);
     res.status(500).json({ success: false, message: 'Failed to list cart' });
   }
 });

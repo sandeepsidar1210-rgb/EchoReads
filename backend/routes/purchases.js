@@ -57,7 +57,15 @@ router.post('/create-checkout-session', protect, async (req, res) => {
     const userId = req.user._id;
     const { name, address, pincode } = req.body || {};
 
-    const cartItems = await CartItem.find({ user: userId }).populate('book');
+    let cartItems = await CartItem.find({ user: userId }).populate('book');
+    
+    // Clean up null/orphan items dynamically
+    const orphanIds = cartItems.filter(item => !item.book).map(item => item._id);
+    if (orphanIds.length > 0) {
+      await CartItem.deleteMany({ _id: { $in: orphanIds } });
+      cartItems = cartItems.filter(item => item.book);
+    }
+    
     if (cartItems.length === 0) {
       return res.status(400).json({ success: false, message: 'Shopping cart is empty.' });
     }
