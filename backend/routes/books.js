@@ -3,6 +3,7 @@ const router = express.Router();
 const Book = require('../models/Book');
 const Purchase = require('../models/Purchase');
 const cache = require('../utils/cache');
+const { protect, optionalProtect } = require('../middleware/auth');
 
 // Helper to clear book list cache
 async function clearBookCache() {
@@ -12,7 +13,7 @@ async function clearBookCache() {
 }
 
 // Get all books with optional genre, sort, and search
-router.get('/', async (req, res) => {
+router.get('/', optionalProtect, async (req, res) => {
   try {
     const { genre, sort, search } = req.query;
 
@@ -40,7 +41,7 @@ router.get('/', async (req, res) => {
 });
 
 // Get available genres
-router.get('/genres', async (req, res) => {
+router.get('/genres', optionalProtect, async (req, res) => {
   try {
     const cacheKey = 'books:genres:list';
     if (cache.isAvailable) {
@@ -76,7 +77,7 @@ router.get('/genres', async (req, res) => {
 });
 
 // Get secure book content for reading/listening (only if purchased or admin)
-router.get('/:id/read', async (req, res) => {
+router.get('/:id/read', protect, async (req, res) => {
   try {
     const bookId = req.params.id;
     const userId = req.user._id;
@@ -114,7 +115,7 @@ router.get('/:id/read', async (req, res) => {
 });
 
 // Get book details by ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', optionalProtect, async (req, res) => {
   try {
     const book = await Book.getById(req.params.id);
     if (!book) {
@@ -139,7 +140,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // Rate a book
-router.post('/:id/rate', async (req, res) => {
+router.post('/:id/rate', protect, async (req, res) => {
   try {
     const ratingNum = Number(req.body?.rating);
     if (!Number.isFinite(ratingNum) || ratingNum < 1 || ratingNum > 5) {

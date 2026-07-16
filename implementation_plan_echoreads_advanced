@@ -1,0 +1,100 @@
+# Implementation Plan: Resume-Quality Features for EchoReads
+
+This implementation plan details the addition of four high-impact, resume-quality features to the EchoReads project:
+1. **AI Integration (Gemini & RAG)**: Live chatbot utilizing Gemini AI API and content retrieval from the MongoDB book catalog.
+2. **Interactive UX (E-Book Reader & Text-to-Speech)**: Custom in-browser e-book reader page with styling customization, bookmarks, and a synchronized TTS audiobook highlighter.
+3. **Payment & Commerce (Stripe & Digital Access Control)**: Sandbox Stripe checkout flow with backend digital access control restricting content reading to purchased books only.
+4. **Backend Performance (Redis Caching & Fuzzy Search)**: Fault-tolerant Redis caching layer and MongoDB text-based search.
+
+---
+
+## User Review Required
+
+> [!IMPORTANT]
+> **API Credentials Needed in `.env`**:
+> To run these features fully, you will need to add the following variables to your `backend/.env` file:
+> * `GEMINI_API_KEY`: A free API key from Google AI Studio.
+> * `STRIPE_SECRET_KEY` & `STRIPE_PUBLISHABLE_KEY`: Free sandbox keys from a Stripe Developer Account.
+> * `REDIS_URL`: URL of your Redis instance (defaults to `redis://localhost:6379`).
+>
+> **Graceful Fallbacks Built-in**:
+> If these credentials or instances are not available locally:
+> * Gemini will fall back to a mock responsive AI matching system.
+> * Stripe will fall back to a mock instant successful payment process.
+> * Redis will gracefully fall back to querying MongoDB directly without crashing the server.
+
+---
+
+## Proposed Changes
+
+### Track 1: AI Integration (Gemini LLM & RAG)
+
+#### [MODIFY] [backend/routes/novia.js](file:///c:/Users/sande/Academics/web%20page/EchoReads/backend/routes/novia.js)
+* **Goal**: Replace simple keyword checking with Google's `@google/generative-ai` SDK.
+* **Retrieval-Augmented Generation (RAG)**: Query MongoDB books based on user query keywords, parse their titles, genres, and summaries, and pass them as a dynamic context header inside the LLM prompt.
+* **Robustness**: Implement a fallback using keyword rule-based mock response if `GEMINI_API_KEY` is not configured, returning a helper notice.
+
+#### [MODIFY] [frontend/novia.html](file:///c:/Users/sande/Academics/web%20page/EchoReads/frontend/novia.html)
+* **Goal**: Redesign the chat view into a premium glassmorphic dark mode layout.
+* **Interactive Cards**: Add logic to detect book titles mentioned in Novia's response, rendering them as structured rich UI recommendation cards inside the chat transcript with direct links to view details.
+
+---
+
+### Track 2: Interactive UX (E-Book Reader & TTS Audiobook)
+
+#### [NEW] [frontend/reader.html](file:///c:/Users/sande/Academics/web%20page/EchoReads/frontend/reader.html)
+* **Goal**: Provide an immersive, interactive in-browser reading application for purchased books.
+* **Customization Controls**:
+  * Adjust text font size (A- / A+).
+  * Color theme switcher: Light (white/black), Dark (slate/white), Sepia (warm cream/brown).
+  * Bookmarking progress (saved locally in `localStorage` per book).
+* **Text-to-Speech Audiobook Sync**:
+  * Controls: Play, Pause, Stop, Speech Speed Slider (0.5x to 2x), and Voice Selector.
+  * Synchronized Highlighting: Use the HTML5 `SpeechSynthesisUtterance` API boundary events (`onboundary` or sentence splitting) to highlight the active sentence in the book view dynamically as it is being spoken.
+
+#### [MODIFY] [frontend/js/main.js](file:///c:/Users/sande/Academics/web%20page/EchoReads/frontend/js/main.js)
+* **Goal**: Enhance the Book Details modal to include a "Read Book" button for purchased books.
+
+---
+
+### Track 3: Payment & Commerce (Stripe Checkout & Access Control)
+
+#### [MODIFY] [backend/routes/purchases.js](file:///c:/Users/sande/Academics/web%20page/EchoReads/backend/routes/purchases.js)
+* **Goal**: Implement Stripe SDK backend payment endpoints.
+* **Endpoints**:
+  * `POST /api/purchases/create-checkout-session`: Formulates Stripe session containing cart line items and prices.
+  * `GET /api/purchases/stripe-success`: Verification handler endpoint that confirms a paid Stripe session, records purchases in MongoDB, and clears the cart.
+* **Mock Fallback**: If Stripe secret keys are not configured, allow checkouts to complete instantly as a mock cash-on-delivery/mock payment.
+
+#### [MODIFY] [backend/routes/books.js](file:///c:/Users/sande/Academics/web%20page/EchoReads/backend/routes/books.js)
+* **Goal**: Add a secure `/api/books/:id/read` endpoint.
+* **Security check**: Verify if the logged-in user has purchased the book (`Purchase.findOne({ user: userId, book: bookId })`). If not, deny access to the book's full `content` (returning a 403 error).
+
+#### [MODIFY] [frontend/checkout.html](file:///c:/Users/sande/Academics/web%20page/EchoReads/frontend/checkout.html)
+* **Goal**: Embed Stripe.js. Render a "Pay Securely with Stripe" button.
+
+---
+
+### Track 4: Backend Performance (Redis Caching & Fuzzy Search)
+
+#### [NEW] [backend/utils/cache.js](file:///c:/Users/sande/Academics/web%20page/EchoReads/backend/utils/cache.js)
+* **Goal**: Implement a wrapper around `ioredis` to manage caching.
+* **Fault Tolerance**: Catch connection errors. If Redis is down, log a warning and fallback to normal MongoDB queries.
+
+#### [MODIFY] [backend/routes/books.js](file:///c:/Users/sande/Academics/web%20page/EchoReads/backend/routes/books.js)
+* **Goal**: Cache catalog queries (`GET /api/books` and `GET /api/books/genres`) in Redis with a 5-minute TTL. Clear the cache whenever a book is created, updated, or deleted.
+* **Fuzzy Text Search**: Implement MongoDB text index on the `Book` schema (`title`, `author`, `genre`). Modify searching behavior to use text indexes for typo-tolerant matching.
+
+---
+
+## Verification Plan
+
+### Automated Verification
+* Install dependencies and run lint checks on updated routes.
+* Perform API endpoint tests for `/api/novia/chat`, `/api/purchases/create-checkout-session`, and secure book reader routes.
+
+### Manual Verification
+1. **AI Chat test**: Interact with Novia to verify RAG and check if mock responses trigger gracefully when the Gemini key is omitted.
+2. **TTS Audiobook test**: Open the reader page, click "Play Speech" and observe word/sentence highlighting and speed changes.
+3. **Stripe payment test**: Add books to cart, click checkout, proceed with Stripe test cards, and ensure books are unlocked in the reader after purchase.
+4. **Redis connection test**: Start the server with Redis running and verified caching logs, then stop Redis and verify fallback.

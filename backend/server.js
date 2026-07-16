@@ -37,7 +37,7 @@ const { protect } = require('./middleware/auth');
 app.use(cors());
 app.use(express.json());
 app.use('/api/auth', require('./routes/auth'));
-app.use('/api/books', protect, require('./routes/books'));
+app.use('/api/books', require('./routes/books'));
 app.use('/api/novia', protect, require('./routes/novia'));
 app.use('/api/purchases', protect, require('./routes/purchases'));
 app.use('/api/cart', protect, require('./routes/cart'));

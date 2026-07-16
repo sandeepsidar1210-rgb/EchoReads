@@ -68,8 +68,8 @@ while ($true) {
     try {
         Push-Location $BackendDir
         
-        # Run node server.js synchronously
-        node server.js > "$ProjectDir\logs\server-out.log" 2> "$ProjectDir\logs\server-err.log"
+        # Run node server.js synchronously via cmd.exe to prevent PowerShell NativeCommandError crashes
+        cmd.exe /c "node server.js > `"$ProjectDir\logs\server-out.log`" 2> `"$ProjectDir\logs\server-err.log`""
         
         Pop-Location
         "[$(Get-Date)] Server stopped. Restarting in 5 seconds..." | Out-File $LogFile -Append -Encoding UTF8
