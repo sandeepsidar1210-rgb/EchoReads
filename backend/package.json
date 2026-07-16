@@ -7,6 +7,7 @@
         "seed:real": "node scripts/seed_real.js",
         "seed": "node scripts/seed.js",
         "dev": "nodemon server.js",
+        "generate:books": "node scripts/generate_books_json.js",
         "import:gutenberg": "node scripts/import_gutenberg.js",
         "start": "node server.js"
     },
